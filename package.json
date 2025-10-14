@@ -4,17 +4,16 @@
   "license": "Commercial",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "lint:fix": "next lint --fix",
-    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
-    "build:icons": "tsx src/assets/iconify-icons/bundle-icons-css.mjs",
-    "migrate": "dotenv -e .env -- npx prisma migrate dev",
-    "postinstall": "prisma generate && npm run build:icons",
-    "removeI18n": "tsx src/remove-translation-scripts/index.js"
-  },
+  "dev": "next dev --turbopack",
+  "build": "npm run build:icons && prisma generate && next build",
+  "start": "next start",
+  "lint": "next lint",
+  "lint:fix": "next lint --fix",
+  "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
+  "build:icons": "tsx src/assets/iconify-icons/bundle-icons-css.mjs",
+  "postinstall": "npm run build:icons && prisma generate",
+  "vercel-build": "npm run build && npx prisma migrate deploy"
+},
   "dependencies": {
     "@auth/prisma-adapter": "2.7.4",
     "@emoji-mart/data": "1.2.1",
