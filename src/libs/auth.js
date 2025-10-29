@@ -9,6 +9,10 @@ const prisma = new PrismaClient()
 export const authOptions = {
   adapter: PrismaAdapter(prisma),
 
+  // Exemplo de como deve ficar no seu auth.ts
+  secret: process.env.NEXTAUTH_SECRET,
+  trustHost: true, // <--- ADICIONE ESTA LINHA AQUI!
+
   // ** Configure one or more authentication providers
   // ** Please refer to https://next-auth.js.org/configuration/options#providers for more `providers` options
   providers: [
