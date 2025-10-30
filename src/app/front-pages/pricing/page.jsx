@@ -1,14 +1,16 @@
-// Component Imports
+'use client'
+import { useEffect, useState } from 'react'
 import PricingWrapper from '@/views/front-pages/pricing'
 
-// Data Imports
-import { getPricingData } from '@/app/server/actions'
+export default function PricingClientPage() {
+  const [data, setData] = useState(null)
 
-const PricingPage = async () => {
-  // Vars
-  const data = await getPricingData()
+  useEffect(() => {
+    fetch('/api/pricing')
+      .then((res) => res.json())
+      .then(setData)
+  }, [])
 
+  if (!data) return <div>Loading...</div>
   return <PricingWrapper data={data} />
 }
-
-export default PricingPage
