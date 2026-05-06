@@ -1,5 +1,7 @@
 'use client'
+
 import { useEffect, useState } from 'react'
+
 import PricingWrapper from '@/views/front-pages/pricing'
 
 export default function PricingClientPage() {
@@ -11,6 +13,9 @@ export default function PricingClientPage() {
       .then(setData)
   }, [])
 
-  if (!data) return <div>Loading...</div>
+  if (!data) {
+    return <div>Loading...</div>
+  }
+
   return <PricingWrapper data={data} />
 }

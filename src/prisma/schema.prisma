@@ -8,18 +8,18 @@ generator client {
 }
 
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?
-  access_token       String?
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?
-  session_state      String?
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -50,4 +50,34 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model Lead {
+  id            String   @id @default(cuid())
+  cnpj          String   @unique
+  nome          String
+  valorDivida   String?
+  situacao      String?
+  telefone      String?
+  email         String?
+  endereco      String?
+  origem        String   @default("PGFN")
+  status        String   @default("NOVO")
+  responsavelId String?
+  criadoEm      DateTime @default(now())
+  atualizadoEm  DateTime @updatedAt
+}
+
+model PipelineAtivo {
+  id             String    @id @default(cuid())
+  leadId         String
+  tipo           String
+  tribunal       String?
+  valorCausa     String?
+  fase           String?
+  responsavelId  String?
+  dataFechamento DateTime?
+  comissao       Float?
+  criadoEm       DateTime  @default(now())
+  atualizadoEm   DateTime  @updatedAt
 }

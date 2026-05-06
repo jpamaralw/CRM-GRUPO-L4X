@@ -46,6 +46,54 @@ const DashboardCRM = async () => {
 
   return (
     <Grid container spacing={6}>
+      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <CardStatVertical
+          stats='14.881'
+          title='Total Leads PGFN'
+          trendNumber='0%'
+          chipText='Base PGFN'
+          avatarColor='primary'
+          avatarIcon='ri-database-2-line'
+          avatarSkin='light'
+          chipColor='secondary'
+        />
+      </Grid>
+      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <CardStatVertical
+          stats='282'
+          title='Com Telefone'
+          trendNumber='0%'
+          chipText='Contatos'
+          avatarColor='success'
+          avatarIcon='ri-phone-line'
+          avatarSkin='light'
+          chipColor='secondary'
+        />
+      </Grid>
+      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <CardStatVertical
+          stats='135'
+          title='Com Email'
+          trendNumber='0%'
+          chipText='Contatos'
+          avatarColor='info'
+          avatarIcon='ri-mail-line'
+          avatarSkin='light'
+          chipColor='secondary'
+        />
+      </Grid>
+      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+        <CardStatVertical
+          stats='0'
+          title='Pipeline Aberto'
+          trendNumber='0%'
+          chipText='Ativos'
+          avatarColor='warning'
+          avatarIcon='ri-folder-chart-line'
+          avatarSkin='light'
+          chipColor='secondary'
+        />
+      </Grid>
       <Grid size={{ xs: 12, md: 4 }}>
         <Award />
       </Grid>

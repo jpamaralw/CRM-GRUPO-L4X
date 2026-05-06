@@ -1,5 +1,14 @@
 const verticalMenuData = dictionary => [
-  // This is how you will normally render submenu
+  // ── L4 Ativos ──────────────────────────────────────────
+  {
+    label: 'L4 Ativos',
+    icon: 'ri-building-line',
+    children: [
+      { label: 'Dashboard CRM', href: '/dashboards/crm' },
+      { label: 'Leads PGFN', href: '/leads/pgfn' },
+      { label: 'Pipeline Ativos', href: '/pipeline' }
+    ]
+  },
   {
     label: dictionary['navigation'].dashboards,
     icon: 'ri-home-smile-line',

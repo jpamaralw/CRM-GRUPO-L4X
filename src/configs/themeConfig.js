@@ -16,9 +16,9 @@
  * Another way is to clear the cookie from the browser's Application/Storage tab and then reload the page.
  */
 const themeConfig = {
-  templateName: 'Materialize',
+  templateName: 'L4 Ativos CRM',
   homePageUrl: '/dashboards/crm',
-  settingsCookieName: 'materialize-mui-next-demo-1',
+  settingsCookieName: 'l4-ativos-crm-1',
   mode: 'system', // 'system', 'light', 'dark'
   skin: 'default', // 'default', 'bordered'
   semiDark: false, // true, false
