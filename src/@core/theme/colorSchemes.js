@@ -3,9 +3,10 @@ const colorSchemes = skin => {
     light: {
       palette: {
         primary: {
-          main: '#666CFF',
+          main: '#0A2540',
           light: '#8589FF',
           dark: '#5C61E6',
+          contrastText: '#FFF',
           lighterOpacity: 'rgb(var(--mui-palette-primary-mainChannel) / 0.08)',
           lightOpacity: 'rgb(var(--mui-palette-primary-mainChannel) / 0.16)',
           mainOpacity: 'rgb(var(--mui-palette-primary-mainChannel) / 0.24)',
@@ -163,9 +164,10 @@ const colorSchemes = skin => {
     dark: {
       palette: {
         primary: {
-          main: '#666CFF',
+          main: '#0A2540',
           light: '#8589FF',
           dark: '#5C61E6',
+          contrastText: '#FFF',
           lighterOpacity: 'rgb(var(--mui-palette-primary-mainChannel) / 0.08)',
           lightOpacity: 'rgb(var(--mui-palette-primary-mainChannel) / 0.16)',
           mainOpacity: 'rgb(var(--mui-palette-primary-mainChannel) / 0.24)',
@@ -237,7 +239,7 @@ const colorSchemes = skin => {
         divider: `rgb(var(--mui-mainColorChannels-dark) / 0.12)`,
         dividerChannel: 'var(--mui-mainColorChannels-dark)',
         background: {
-          default: skin === 'bordered' ? '#30334E' : '#282A42',
+          default: '#0B0B0B',
           paper: '#30334E',
           paperChannel: '48 51 78'
         },
@@ -310,7 +312,7 @@ const colorSchemes = skin => {
           border: 'var(--mui-palette-divider)'
         },
         customColors: {
-          bodyBg: '#282A42',
+          bodyBg: '#0B0B0B',
           chatBg: '#343752',
           greyLightBg: '#333851',
           inputBorder: `rgb(var(--mui-mainColorChannels-dark) / 0.22)`,
