@@ -75,6 +75,7 @@ model PipelineAtivo {
   tribunal       String?
   valorCausa     String?
   fase           String?
+  stage          String    @default("PROSPECÇÃO")
   responsavelId  String?
   dataFechamento DateTime?
   comissao       Float?
