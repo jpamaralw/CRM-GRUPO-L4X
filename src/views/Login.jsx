@@ -25,9 +25,6 @@ import { valibotResolver } from '@hookform/resolvers/valibot'
 import { object, minLength, string, email, pipe, nonEmpty } from 'valibot'
 import classnames from 'classnames'
 
-// Component Imports
-import Logo from '@components/layout/shared/Logo'
-
 // Config Imports
 import themeConfig from '@configs/themeConfig'
 
@@ -131,13 +128,13 @@ const Login = ({ mode }) => {
         <img src={authBackground} className='absolute bottom-[4%] z-[-1] is-full max-md:hidden' />
       </div>
       <div className='flex justify-center items-center bs-full bg-backgroundPaper !min-is-full p-6 md:!min-is-[unset] md:p-12 md:is-[480px]'>
-        <div className='absolute block-start-5 sm:block-start-[38px] inline-start-6 sm:inline-start-[38px]'>
-          <Logo />
-        </div>
         <div className='flex flex-col gap-5 is-full sm:is-auto md:is-full sm:max-is-[400px] md:max-is-[unset]'>
-          <div>
-            <Typography variant='h4'>{`Welcome to ${themeConfig.templateName}!👋🏻`}</Typography>
-            <Typography>Please sign-in to your account and start the adventure</Typography>
+          <div className='flex flex-col items-center gap-3 text-center'>
+            <img src='/images/logo-l4.jpeg' alt='L4 Ativos' style={{ height: 40 }} />
+            <div>
+              <Typography variant='h4'>{themeConfig.templateName}</Typography>
+              <Typography>Acesse sua conta para continuar</Typography>
+            </div>
           </div>
           <Alert icon={false} className='bg-[var(--mui-palette-primary-lightOpacity)]'>
             <Typography variant='body2' color='primary.main'>

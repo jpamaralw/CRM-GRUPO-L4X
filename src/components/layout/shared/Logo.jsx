@@ -6,9 +6,6 @@ import { useEffect, useRef } from 'react'
 // Third-party Imports
 import styled from '@emotion/styled'
 
-// Component Imports
-import MaterializeLogo from '@core/svg/Logo'
-
 // Config Imports
 import themeConfig from '@configs/themeConfig'
 
@@ -61,7 +58,7 @@ const Logo = ({ color }) => {
 
   return (
     <div className='flex items-center min-bs-[24px]'>
-      <MaterializeLogo />
+      <img src='/images/logo-l4.jpeg' alt='L4 Ativos' style={{ height: 40 }} />
       <LogoText
         color={color}
         ref={logoTextRef}

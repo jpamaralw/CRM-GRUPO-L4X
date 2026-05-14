@@ -56,7 +56,8 @@ const CustomThemeProvider = props => {
             primary: {
               main: settings.primaryColor,
               light: lighten(settings.primaryColor, 0.2),
-              dark: darken(settings.primaryColor, 0.1)
+              dark: darken(settings.primaryColor, 0.1),
+              contrastText: '#FFF'
             }
           }
         },
@@ -65,7 +66,8 @@ const CustomThemeProvider = props => {
             primary: {
               main: settings.primaryColor,
               light: lighten(settings.primaryColor, 0.2),
-              dark: darken(settings.primaryColor, 0.1)
+              dark: darken(settings.primaryColor, 0.1),
+              contrastText: '#FFF'
             }
           }
         }
