@@ -18,7 +18,7 @@
 const themeConfig = {
   templateName: 'L4 Ativos CRM',
   homePageUrl: '/dashboards/crm',
-  settingsCookieName: 'l4-ativos-crm-1',
+  settingsCookieName: 'l4-ativos-crm-settings',
   mode: 'system', // 'system', 'light', 'dark'
   skin: 'default', // 'default', 'bordered'
   semiDark: false, // true, false

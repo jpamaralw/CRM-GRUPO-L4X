@@ -8,21 +8,19 @@ generator client {
 }
 
 model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
-
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
   @@unique([provider, providerAccountId])
 }
 
@@ -40,44 +38,181 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
+  password      String?
+  role          String    @default("SDR")
+  isActive      Boolean   @default(true)
+  phone         String?
   accounts      Account[]
   sessions      Session[]
+  leadsAssigned Lead[]    @relation("assignedTo")
+  activities    Activity[]
+  automationLogs AutomationLog[]
 }
 
 model VerificationToken {
   identifier String
   token      String   @unique
   expires    DateTime
-
   @@unique([identifier, token])
 }
 
 model Lead {
-  id            String   @id @default(cuid())
-  cnpj          String   @unique
-  nome          String
-  valorDivida   String?
-  situacao      String?
-  telefone      String?
-  email         String?
-  endereco      String?
-  origem        String   @default("PGFN")
-  status        String   @default("NOVO")
-  responsavelId String?
-  criadoEm      DateTime @default(now())
-  atualizadoEm  DateTime @updatedAt
+  id               String   @id @default(cuid())
+  numeroProcesso   String   @unique
+  tribunal         String
+  classeNome       String?
+  classeCodigo     Int?
+  valorCausa       Float?
+  dataAjuizamento  String?
+  fase             String?
+  score            Int?
+  prioridade       String?
+  autor            String?
+  reu              String?
+  advogado         String?
+  cnpjEmpresa      String?
+  temAdvogado      Boolean?
+  hasCitacao       Boolean  @default(false)
+  citacaoStatus    String?
+  citacaoEvidencias String?
+  telefone         String?
+  email            String?
+  pipeline         String   @default("PROSPECCAO")
+  statusCrm        String   @default("NOVO")
+  assignedToId     String?
+  assignedTo       User?    @relation("assignedTo", fields: [assignedToId], references: [id])
+  abordagemTipo    String?
+  lastContactAt    DateTime?
+  nextFollowUpAt   DateTime?
+  linkProcesso     String?
+  loteEntrega      String?
+  grupo            String?
+  governoPapel     String?
+  fonte            String?
+  detalhes         String?
+  reuniaoComprovante String?
+  reuniaoTipo      String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  movimentacoes    Movimentacao[]
+  activities       Activity[]
+  automationLogs   AutomationLog[]
+  processosMonitorados ProcessoMonitorado[]
+  @@index([pipeline])
+  @@index([statusCrm])
+  @@index([assignedToId])
+  @@index([score])
+  @@index([prioridade])
+  @@index([tribunal])
 }
 
-model PipelineAtivo {
-  id             String    @id @default(cuid())
+model Movimentacao {
+  id             String   @id @default(cuid())
   leadId         String
-  tipo           String
-  tribunal       String?
-  valorCausa     String?
-  fase           String?
-  responsavelId  String?
-  dataFechamento DateTime?
-  comissao       Float?
-  criadoEm       DateTime  @default(now())
-  atualizadoEm   DateTime  @updatedAt
+  lead           Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  dataMovimento  DateTime
+  descricao      String
+  tipo           String?
+  fonte          String?
+  createdAt      DateTime @default(now())
+  @@index([leadId])
+  @@index([dataMovimento])
+}
+
+model Activity {
+  id          String   @id @default(cuid())
+  leadId      String
+  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  tipo        String
+  descricao   String
+  metadata    String?
+  createdAt   DateTime @default(now())
+  @@index([leadId])
+  @@index([userId])
+}
+
+model Automation {
+  id          String   @id @default(cuid())
+  nome        String
+  pipeline    String
+  triggerStatus String
+  action      String
+  config      String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AutomationLog {
+  id           String   @id @default(cuid())
+  automationId String
+  leadId       String?
+  lead         Lead?    @relation(fields: [leadId], references: [id])
+  userId       String?
+  user         User?    @relation(fields: [userId], references: [id])
+  status       String
+  resultado    String?
+  createdAt    DateTime @default(now())
+
+  @@index([automationId])
+  @@index([leadId])
+  @@index([userId])
+}
+
+model ProcessoMonitorado {
+  id               String   @id @default(cuid())
+  numeroProcesso   String   @unique
+  tribunal         String?
+  cliente          String?
+  responsavelNome  String?
+  origemArquivo    String?
+  status           String   @default("ATIVO")
+  statusConsulta   String   @default("PENDENTE")
+  ultimaConsultaAt DateTime?
+  ultimaMovimentacaoAt DateTime?
+  ultimaMovimentacaoTexto String?
+  leadId           String?
+  lead             Lead?    @relation(fields: [leadId], references: [id])
+  observacoes      String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  movimentacoes    MovimentacaoMonitorada[]
+
+  @@index([tribunal])
+  @@index([status])
+  @@index([statusConsulta])
+  @@index([leadId])
+}
+
+model MovimentacaoMonitorada {
+  id                   String   @id @default(cuid())
+  processoMonitoradoId String
+  processoMonitorado   ProcessoMonitorado @relation(fields: [processoMonitoradoId], references: [id], onDelete: Cascade)
+  dataMovimento        DateTime?
+  descricao            String
+  hash                 String
+  fonte                String?
+  nova                 Boolean  @default(true)
+  visualizada          Boolean  @default(false)
+  createdAt            DateTime @default(now())
+
+  @@unique([processoMonitoradoId, hash])
+  @@index([processoMonitoradoId])
+  @@index([nova])
+  @@index([visualizada])
+}
+
+model ConsultaProcessualRun {
+  id              String   @id @default(cuid())
+  startedAt       DateTime @default(now())
+  finishedAt      DateTime?
+  status          String   @default("RUNNING")
+  totalProcessos  Int      @default(0)
+  consultados     Int      @default(0)
+  novasMovimentacoes Int   @default(0)
+  erros           Int      @default(0)
+  detalhes        String?
 }
