@@ -24,7 +24,7 @@
     ],
     "ignoreDeprecations": "6.0",
     "paths": {
-      "@/*": ["./*"],
+      "@/*": ["./src/*"],
       "@views/*": ["./src/views/*"],
       "@core/*": ["./src/@core/*"],
       "@hocs/*": ["./src/hocs/*"],
