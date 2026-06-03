@@ -22,7 +22,22 @@
         "name": "next"
       }
     ],
-    "ignoreDeprecations": "6.0"
+    "ignoreDeprecations": "6.0",
+    "paths": {
+      "@/*": ["./*"],
+      "@views/*": ["./src/views/*"],
+      "@core/*": ["./src/core/*"],
+      "@hocs/*": ["./src/hocs/*"],
+      "@configs/*": ["./src/configs/*"],
+      "@libs/*": ["./src/libs/*"],
+      "@utils/*": ["./src/utils/*"],
+      "@data/*": ["./src/data/*"],
+      "@components/*": ["./src/components/*"],
+      "@assets/*": ["./src/assets/*"],
+      "@styles/*": ["./src/styles/*"],
+      "@api/*": ["./src/app/api/*"],
+      "@prisma": ["./src/prisma"]
+    }
   },
   "include": [
     "next-env.d.ts",
