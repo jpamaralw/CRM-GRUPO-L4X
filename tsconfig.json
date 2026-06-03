@@ -36,6 +36,8 @@
       "@assets/*": ["./src/assets/*"],
       "@styles/*": ["./src/styles/*"],
       "@api/*": ["./src/app/api/*"],
+      "@menu/*": ["./src/@menu/*"],
+      "@layouts/*": ["./src/@layouts/*"],
       "@prisma": ["./src/prisma"]
     }
   },
