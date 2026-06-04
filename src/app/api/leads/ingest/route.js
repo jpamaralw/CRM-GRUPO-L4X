@@ -1,48 +1,30 @@
-import { NextRequest, NextResponse } from 'next/server'
-import prisma from '@/libs/prisma'
+import { NextResponse } from 'next/server'
+
+import { PrismaClient } from '@prisma/client'
+
+const globalForPrisma = globalThis
+const prisma = globalForPrisma.prisma ?? new PrismaClient()
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
 const SCRAPER_API_KEY = process.env.SCRAPER_SECRET_KEY || ''
 
-interface IngestLeadRequest {
-  numeroProcesso: string
-  tribunal: string
-  autor: string
-  reu: string
-  valorCausa: number
-  dataAjuizamento: string
-  fase?: string
-  score?: number
-  cnpj?: string
-  cpf?: string
-  polo_ativo?: string
-  polo_passivo?: string
-  assertiva_id?: string
-  assertiva_data?: Record<string, any>
-  origem?: string
-  raw_metadata?: Record<string, any>
-}
-
-export async function POST(request: NextRequest) {
+export async function POST(request) {
   try {
     // Validate API key
     const authHeader = request.headers.get('authorization')
     const apiKey = authHeader?.replace('Bearer ', '')
 
     if (!apiKey || apiKey !== SCRAPER_API_KEY) {
-      return NextResponse.json(
-        { error: 'Unauthorized: Invalid API key' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Unauthorized: Invalid API key' }, { status: 401 })
     }
 
-    const body: IngestLeadRequest = await request.json()
+    const body = await request.json()
 
     // Validate required fields
     if (!body.numeroProcesso || !body.tribunal) {
       return NextResponse.json(
-        {
-          error: 'Missing required fields: numeroProcesso, tribunal'
-        },
+        { error: 'Missing required fields: numeroProcesso, tribunal' },
         { status: 400 }
       )
     }
@@ -52,7 +34,6 @@ export async function POST(request: NextRequest) {
     let cpf = body.cpf
 
     if (!cnpj && !cpf) {
-      // Try to extract from reu string (format: "Name CNPJ: XX.XXX.XXX/XXXX-XX")
       const cnpjMatch = body.reu?.match(/(\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2})/)
       const cpfMatch = body.reu?.match(/(\d{3}\.\d{3}\.\d{3}-\d{2})/)
 
@@ -131,14 +112,13 @@ export async function POST(request: NextRequest) {
       isNew: !existingLead,
       message: existingLead ? 'Lead atualizado com sucesso' : 'Lead criado com sucesso'
     })
-
   } catch (error) {
     console.error('[/api/leads/ingest] Error:', error)
 
     return NextResponse.json(
       {
         error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error?.message || 'Unknown error'
       },
       { status: 500 }
     )

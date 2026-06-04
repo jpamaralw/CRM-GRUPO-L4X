@@ -1,43 +1,25 @@
-import { NextRequest, NextResponse } from 'next/server'
-import prisma from '@/libs/prisma'
+import { NextResponse } from 'next/server'
+
+import { PrismaClient } from '@prisma/client'
+
+const globalForPrisma = globalThis
+const prisma = globalForPrisma.prisma ?? new PrismaClient()
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
 const SCRAPER_API_KEY = process.env.SCRAPER_SECRET_KEY || ''
 
-interface BatchLead {
-  numeroProcesso: string
-  tribunal: string
-  autor: string
-  reu: string
-  valorCausa: number
-  dataAjuizamento: string
-  fase?: string
-  score?: number
-  cnpj?: string
-  cpf?: string
-  [key: string]: any
-}
-
-interface BatchIngestRequest {
-  leads: BatchLead[]
-  batch_id: string
-  tribunal?: string
-  operation?: 'fetch' | 'enrich' | 'update'
-}
-
-export async function POST(request: NextRequest) {
+export async function POST(request) {
   try {
     // Validate API key
     const authHeader = request.headers.get('authorization')
     const apiKey = authHeader?.replace('Bearer ', '')
 
     if (!apiKey || apiKey !== SCRAPER_API_KEY) {
-      return NextResponse.json(
-        { error: 'Unauthorized: Invalid API key' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: 'Unauthorized: Invalid API key' }, { status: 401 })
     }
 
-    const body: BatchIngestRequest = await request.json()
+    const body = await request.json()
 
     if (!body.leads || !Array.isArray(body.leads) || body.leads.length === 0) {
       return NextResponse.json(
@@ -72,7 +54,7 @@ export async function POST(request: NextRequest) {
     let created = 0
     let updated = 0
     let errors = 0
-    const errorDetails: Array<{ numeroProcesso?: string; error: string }> = []
+    const errorDetails = []
 
     // Process each lead
     for (const leadData of body.leads) {
@@ -168,12 +150,11 @@ export async function POST(request: NextRequest) {
             })
           }
         }
-
       } catch (leadError) {
         errors++
         errorDetails.push({
           numeroProcesso: leadData.numeroProcesso,
-          error: leadError instanceof Error ? leadError.message : 'Unknown error'
+          error: leadError?.message || 'Unknown error'
         })
       }
     }
@@ -208,14 +189,13 @@ export async function POST(request: NextRequest) {
       error_details: errors > 0 ? errorDetails.slice(0, 10) : undefined,
       timestamp: new Date().toISOString()
     })
-
   } catch (error) {
     console.error('[/api/leads/batch-ingest] Error:', error)
 
     return NextResponse.json(
       {
         error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error?.message || 'Unknown error'
       },
       { status: 500 }
     )
