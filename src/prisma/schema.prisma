@@ -63,7 +63,7 @@ model Lead {
   classeNome       String?
   classeCodigo     Int?
   valorCausa       Float?
-  dataAjuizamento  String?
+  dataAjuizamento  DateTime?
   fase             String?
   score            Int?
   prioridade       String?
@@ -71,6 +71,8 @@ model Lead {
   reu              String?
   advogado         String?
   cnpjEmpresa      String?
+  cnpj             String?
+  cpf              String?
   temAdvogado      Boolean?
   hasCitacao       Boolean  @default(false)
   citacaoStatus    String?
@@ -89,9 +91,11 @@ model Lead {
   grupo            String?
   governoPapel     String?
   fonte            String?
+  origem           String?
   detalhes         String?
   reuniaoComprovante String?
   reuniaoTipo      String?
+  metadata         Json?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   movimentacoes    Movimentacao[]
@@ -104,6 +108,9 @@ model Lead {
   @@index([score])
   @@index([prioridade])
   @@index([tribunal])
+  @@index([cnpj])
+  @@index([cpf])
+  @@index([origem])
 }
 
 model Movimentacao {
@@ -123,10 +130,11 @@ model Activity {
   id          String   @id @default(cuid())
   leadId      String
   lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
   tipo        String
   descricao   String
+  usuario     String?
   metadata    String?
   createdAt   DateTime @default(now())
   @@index([leadId])
@@ -215,4 +223,21 @@ model ConsultaProcessualRun {
   novasMovimentacoes Int   @default(0)
   erros           Int      @default(0)
   detalhes        String?
+}
+
+model ScrapingBatch {
+  id              String   @id @default(cuid())
+  batch_id        String   @unique
+  tribunal        String
+  operation       String
+  total_leads     Int
+  created         Int      @default(0)
+  updated         Int      @default(0)
+  errors          Int      @default(0)
+  error_details   Json?
+  status          String   @default("SUCCESS")
+  processed_at    DateTime @default(now())
+  @@index([batch_id])
+  @@index([tribunal])
+  @@index([operation])
 }
