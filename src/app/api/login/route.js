@@ -1,34 +1,30 @@
 // Next Imports
 import { NextResponse } from 'next/server'
 
-// Mock data for demo purpose
-import { users } from './users'
+// Third-party Imports
+import { compare } from 'bcryptjs'
 
+import prisma from '@/libs/prisma'
+
+// Validates credentials against the team registered in the database.
 export async function POST(req) {
-  // Vars
   const { email, password } = await req.json()
-  const user = users.find(u => u.email === email && u.password === password)
-  let response = null
 
-  if (user) {
-    const { password: _, ...filteredUserData } = user
+  const user = email
+    ? await prisma.user.findUnique({ where: { email: String(email).toLowerCase().trim() } })
+    : null
 
-    response = {
-      ...filteredUserData
-    }
+  const ok = user && user.password && user.isActive !== false && (await compare(String(password ?? ''), user.password))
 
-    return NextResponse.json(response)
-  } else {
-    // We return 401 status code and error message if user is not found
+  if (!ok) {
     return NextResponse.json(
-      {
-        // We create object here to separate each error message for each field in case of multiple errors
-        message: ['Email or Password is invalid']
-      },
-      {
-        status: 401,
-        statusText: 'Unauthorized Access'
-      }
+      { message: ['Email ou senha inválidos'] },
+      { status: 401, statusText: 'Unauthorized Access' }
     )
   }
+
+  // Strip the password hash before returning
+  const { password: _pw, ...safeUser } = user
+
+  return NextResponse.json(safeUser)
 }

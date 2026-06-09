@@ -21,7 +21,6 @@ import Sales from '@views/pages/widget-examples/statistics/Sales'
 import LiveVisitors from '@views/pages/widget-examples/statistics/LiveVisitors'
 import HorizontalStatisticsCard from '@views/pages/widget-examples/statistics/HorizontalStatisticsCard'
 import CustomerStatisticsCard from '@views/pages/widget-examples/statistics/CustomerStatisticsCard'
-import LogisticsStatisticsCard from '@views/apps/logistics/dashboard/LogisticsStatisticsCard'
 import UserListCards from '@views/pages/widget-examples/statistics/UserListCards'
 
 // Data Imports
@@ -54,9 +53,6 @@ const Statistics = async () => {
       </Grid>
       <Grid size={{ xs: 12 }}>
         <Characters data={data.statsCharacter} />
-      </Grid>
-      <Grid size={{ xs: 12 }}>
-        <LogisticsStatisticsCard data={data?.statsHorizontalWithBorder} />
       </Grid>
       <Grid size={{ xs: 12 }}>
         <UserListCards />

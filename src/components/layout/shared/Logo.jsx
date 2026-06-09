@@ -56,19 +56,15 @@ const Logo = ({ color }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isHovered, layout, isBreakpointReached])
 
+  const isCollapsedNoHover = !isBreakpointReached && layout === 'collapsed' && !isHovered
+
   return (
     <div className='flex items-center min-bs-[24px]'>
-      <img src='/images/logo-l4.jpeg' alt='L4 Ativos' style={{ height: 40 }} />
-      <LogoText
-        color={color}
-        ref={logoTextRef}
-        isHovered={isHovered}
-        isCollapsed={layout === 'collapsed'}
-        transitionDuration={transitionDuration}
-        isBreakpointReached={isBreakpointReached}
-      >
-        {themeConfig.templateName}
-      </LogoText>
+      <img
+        src={isCollapsedNoHover ? '/images/logo-l4-mark.png' : '/images/logo-l4.png'}
+        alt='L4 Ativos'
+        style={{ height: isCollapsedNoHover ? 30 : 34, width: 'auto', objectFit: 'contain' }}
+      />
     </div>
   )
 }

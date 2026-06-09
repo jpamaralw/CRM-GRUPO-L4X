@@ -35,13 +35,18 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
+  id                   String    @id @default(cuid())
+  name                 String?
+  email                String?   @unique
+  emailVerified        DateTime?
+  image                String?
+  password             String?
+  role                 String    @default("SDR")
+  isActive             Boolean   @default(true)
+  phone                String?
+  processosMonitorados String?
+  accounts             Account[]
+  sessions             Session[]
 }
 
 model VerificationToken {
@@ -53,19 +58,20 @@ model VerificationToken {
 }
 
 model Lead {
-  id            String   @id @default(cuid())
-  cnpj          String   @unique
+  id            String               @id @default(cuid())
+  cnpj          String               @unique
   nome          String
   valorDivida   String?
   situacao      String?
   telefone      String?
   email         String?
   endereco      String?
-  origem        String   @default("PGFN")
-  status        String   @default("NOVO")
+  origem        String               @default("PGFN")
+  status        String               @default("NOVO")
   responsavelId String?
-  criadoEm      DateTime @default(now())
-  atualizadoEm  DateTime @updatedAt
+  criadoEm      DateTime             @default(now())
+  atualizadoEm  DateTime             @updatedAt
+  processos     ProcessoMonitorado[]
 }
 
 model PipelineAtivo {
@@ -82,4 +88,59 @@ model PipelineAtivo {
   comissao       Float?
   criadoEm       DateTime  @default(now())
   atualizadoEm   DateTime  @updatedAt
+}
+
+model ConsultaProcessualRun {
+  id                 String    @id @default(cuid())
+  startedAt          DateTime  @default(now())
+  finishedAt         DateTime?
+  status             String    @default("RUNNING")
+  totalProcessos     Int       @default(0)
+  consultados        Int       @default(0)
+  novasMovimentacoes Int       @default(0)
+  erros              Int       @default(0)
+  detalhes           String?
+}
+
+model ProcessoMonitorado {
+  id                      String                   @id @default(cuid())
+  numeroProcesso          String                   @unique
+  tribunal                String?
+  cliente                 String?
+  responsavelNome         String?
+  origemArquivo           String?
+  status                  String                   @default("ATIVO")
+  statusConsulta          String                   @default("PENDENTE")
+  ultimaConsultaAt        DateTime?
+  ultimaMovimentacaoAt    DateTime?
+  ultimaMovimentacaoTexto String?
+  leadId                  String?
+  observacoes             String?
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  movimentacoes           MovimentacaoMonitorada[]
+  lead                    Lead?                    @relation(fields: [leadId], references: [id])
+
+  @@index([leadId])
+  @@index([statusConsulta])
+  @@index([status])
+  @@index([tribunal])
+}
+
+model MovimentacaoMonitorada {
+  id                   String             @id @default(cuid())
+  processoMonitoradoId String
+  dataMovimento        DateTime?
+  descricao            String
+  hash                 String
+  fonte                String?
+  nova                 Boolean            @default(true)
+  visualizada          Boolean            @default(false)
+  createdAt            DateTime           @default(now())
+  processo             ProcessoMonitorado @relation(fields: [processoMonitoradoId], references: [id], onDelete: Cascade)
+
+  @@unique([processoMonitoradoId, hash])
+  @@index([nova])
+  @@index([processoMonitoradoId])
+  @@index([visualizada])
 }

@@ -17,9 +17,9 @@
  */
 const themeConfig = {
   templateName: 'L4 Ativos CRM',
-  homePageUrl: '/dashboards/crm',
+  homePageUrl: '/pipeline',
   settingsCookieName: 'l4-ativos-crm-1',
-  mode: 'system', // 'system', 'light', 'dark'
+  mode: 'light', // 'system', 'light', 'dark'
   skin: 'default', // 'default', 'bordered'
   semiDark: false, // true, false
   layout: 'vertical', // 'vertical', 'collapsed', 'horizontal'

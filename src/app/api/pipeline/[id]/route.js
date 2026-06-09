@@ -5,6 +5,7 @@ import prisma from '@/libs/prisma'
 export async function PATCH(req, { params }) {
   try {
     const { stage } = await req.json()
+
     const updated = await prisma.pipelineAtivo.update({
       where: { id: params.id },
       data: { stage }

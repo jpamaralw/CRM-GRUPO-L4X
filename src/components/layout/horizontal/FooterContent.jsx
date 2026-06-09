@@ -21,26 +21,13 @@ const FooterContent = () => {
       className={classnames(horizontalLayoutClasses.footerContent, 'flex items-center justify-between flex-wrap gap-4')}
     >
       <p>
-        <span className='text-textSecondary'>{`© ${new Date().getFullYear()}, L4 Ativos`}</span>
+        <span className='text-textSecondary'>
+          {`© ${new Date().getFullYear()} L4 Ativos — Todos os direitos reservados`}
+        </span>
       </p>
       {!isBreakpointReached && (
         <div className='flex items-center gap-4'>
-          <Link href='https://themeforest.net/licenses/standard' target='_blank' className='text-primary'>
-            License
-          </Link>
-          <Link href='https://themeforest.net/user/pixinvent/portfolio' target='_blank' className='text-primary'>
-            More Themes
-          </Link>
-          <Link
-            href='https://demos.pixinvent.com/materialize-nextjs-admin-template/documentation'
-            target='_blank'
-            className='text-primary'
-          >
-            Documentation
-          </Link>
-          <Link href='https://pixinvent.ticksy.com' target='_blank' className='text-primary'>
-            Support
-          </Link>
+          <span className='text-textSecondary text-sm'>L4 Ativos CRM v1.0</span>
         </div>
       )}
     </div>
