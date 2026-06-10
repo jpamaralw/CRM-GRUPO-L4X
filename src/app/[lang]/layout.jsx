@@ -26,8 +26,7 @@ import '@assets/iconify-icons/generated-icons.css'
 
 export const metadata = {
   title: 'L4 Ativos CRM',
-  description: 'Gestão de leads, pipeline de precatórios e ativos judiciais — L4 Ativos',
-  icons: { icon: '/images/logo-l4-mark.png' }
+  description: 'Gestão de leads, pipeline de precatórios e ativos judiciais — L4 Ativos'
 }
 
 const RootLayout = async props => {
