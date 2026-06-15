@@ -16,6 +16,7 @@
     "seed:users": "node src/scripts/seed-users.mjs",
     "import:leads": "node src/scripts/import-leads.mjs",
     "import:processos": "node src/scripts/import-processos.mjs",
+    "import:controle-processual": "node src/scripts/import-controle-processual.mjs",
     "validate:prod": "node src/scripts/validate-prod.mjs"
   },
   "dependencies": {

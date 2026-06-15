@@ -11,7 +11,7 @@ const verticalMenuData = dictionary => [
       {
         label: 'Prospecção',
         icon: 'ri-search-line',
-        href: '/pipelines/prospeccao',
+        href: '/pipeline?pipeline=PROSPECCAO',
         suffix: {
           label: 'SDR',
           color: 'info'
@@ -20,7 +20,7 @@ const verticalMenuData = dictionary => [
       {
         label: 'Negociação',
         icon: 'ri-handshake-line',
-        href: '/pipelines/negociacao',
+        href: '/pipeline?pipeline=NEGOCIACAO',
         suffix: {
           label: 'Closer',
           color: 'warning'
@@ -29,16 +29,11 @@ const verticalMenuData = dictionary => [
       {
         label: 'Pós-Venda',
         icon: 'ri-user-star-line',
-        href: '/pipelines/pos-venda',
+        href: '/pipeline?pipeline=POS_VENDA',
         suffix: {
           label: 'Gestão',
           color: 'success'
         }
-      },
-      {
-        label: 'Todos os Leads',
-        icon: 'ri-group-line',
-        href: '/leads'
       }
     ]
   },

@@ -111,6 +111,7 @@ model Lead {
   @@index([cnpj])
   @@index([cpf])
   @@index([origem])
+  @@map("LeadJudicial")
 }
 
 model Movimentacao {

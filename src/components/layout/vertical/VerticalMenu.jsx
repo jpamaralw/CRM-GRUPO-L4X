@@ -51,13 +51,10 @@ const VerticalMenu = ({ scrollMenu }) => {
 
         <MenuSection label='Comercial'>
           <SubMenu label='Pipelines' icon={<i className='ri-git-branch-line' />}>
-            <MenuItem href={`/${locale}/pipelines/prospeccao`}>Prospecao</MenuItem>
-            <MenuItem href={`/${locale}/pipelines/negociacao`}>Negociacao</MenuItem>
-            <MenuItem href={`/${locale}/pipelines/pos-venda`}>Pos-venda</MenuItem>
+            <MenuItem href={`/${locale}/pipeline?pipeline=PROSPECCAO`}>Prospeccao</MenuItem>
+            <MenuItem href={`/${locale}/pipeline?pipeline=NEGOCIACAO`}>Negociacao</MenuItem>
+            <MenuItem href={`/${locale}/pipeline?pipeline=POS_VENDA`}>Pos-venda</MenuItem>
           </SubMenu>
-          <MenuItem href={`/${locale}/leads`} icon={<i className='ri-group-line' />}>
-            Leads
-          </MenuItem>
         </MenuSection>
 
         <MenuSection label='Juridico'>

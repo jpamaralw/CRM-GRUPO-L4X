@@ -16,6 +16,7 @@ import ExternalLinks from '@views/dashboards/crm/ExternalLinks'
 import PaymentHistory from '@views/dashboards/crm/PaymentHistory'
 import SalesInCountries from '@views/dashboards/crm/SalesInCountries'
 import UserTable from '@views/dashboards/crm/UserTable'
+import FollowUpsDue from '@views/dashboards/crm/FollowUpsDue'
 
 // Server Action Imports
 import { getServerMode } from '@core/utils/serverHelpers'
@@ -39,13 +40,17 @@ import { getUserData } from '@/app/server/actions'
 
   return res.json()
 } */
-const DashboardCRM = async () => {
+const DashboardCRM = async props => {
   // Vars
+  const params = await props.params
   const data = await getUserData()
   const serverMode = await getServerMode()
 
   return (
     <Grid container spacing={6}>
+      <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+        <FollowUpsDue lang={params.lang} />
+      </Grid>
       <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         <CardStatVertical
           stats='14.881'
