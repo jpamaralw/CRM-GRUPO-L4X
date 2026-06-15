@@ -1,5 +1,5 @@
 // Component Imports
-import LoginV1 from '@views/pages/auth/LoginV1'
+import Login from '@views/Login'
 
 // Server Action Imports
 import { getServerMode } from '@core/utils/serverHelpers'
@@ -8,7 +8,7 @@ const LoginPage = async () => {
   // Vars
   const mode = await getServerMode()
 
-  return <LoginV1 mode={mode} />
+  return <Login mode={mode} />
 }
 
 export default LoginPage
