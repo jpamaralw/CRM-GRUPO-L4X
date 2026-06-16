@@ -15,7 +15,23 @@
       "Bash(rm -rf node_modules package-lock.json .next)",
       "Bash(npm install *)",
       "Bash(npm run *)",
-      "Bash(npx prisma *)"
+      "Bash(npx prisma *)",
+      "Bash(npx next *)",
+      "Read(//tmp/**)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3001/en/pipeline)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3001/en/login)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3001/en/dashboards/crm)",
+      "Bash(node -e \"console.log\\(require.resolve\\('next/package.json'\\)\\)\")",
+      "Bash(netstat -ano)",
+      "Bash(curl -s http://localhost:3001/en/login)",
+      "Bash(rm -f cookies.txt)",
+      "Bash(curl -s -c cookies.txt http://localhost:3001/api/auth/csrf)",
+      "Bash(nslookup ep-still-glitter-ad3h9o54-pooler.c-2.us-east-1.aws.neon.tech)",
+      "Bash(powershell -Command \"Test-NetConnection -ComputerName ep-still-glitter-ad3h9o54-pooler.c-2.us-east-1.aws.neon.tech -Port 5432\")",
+      "Bash(node *)",
+      "Bash(curl -s \"http://localhost:3001/en/login\")",
+      "Bash(grep -qE \"Compiled successfully|Failed to compile|Error:|✓ Generating static|error -|Type error\" \"C:/Users/ppped/AppData/Local/Temp/claude/C--Users-ppped-CRM-GRUPO-L4X/cee54431-8d4f-4056-b899-baa2baee0171/tasks/bg05nbci4.output\")",
+      "Bash(break)"
     ]
   }
 }
