@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/acompanhamento/consultar?limit=80",
+      "schedule": "0 9 * * *"
+    }
+  ]
+}

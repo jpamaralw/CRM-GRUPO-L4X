@@ -1,168 +1,137 @@
-// MUI Imports
 import Grid from '@mui/material/Grid2'
+import Typography from '@mui/material/Typography'
 
-// Components Imports
-import Award from '@views/dashboards/crm/Award'
 import CardStatVertical from '@components/card-statistics/Vertical'
-import StackedBarChart from '@views/dashboards/crm/StackedBarChart'
-import DonutChart from '@views/dashboards/crm/DonutChart'
-import OrganicSessions from '@views/dashboards/crm/OrganicSessions'
-import ProjectTimeline from '@views/dashboards/crm/ProjectTimeline'
-import WeeklyOverview from '@views/dashboards/crm/WeeklyOverview'
-import SocialNetworkVisits from '@views/dashboards/crm/SocialNetworkVisits'
-import MonthlyBudget from '@views/dashboards/crm/MonthlyBudget'
-import MeetingSchedule from '@views/dashboards/crm/MeetingSchedule'
-import ExternalLinks from '@views/dashboards/crm/ExternalLinks'
-import PaymentHistory from '@views/dashboards/crm/PaymentHistory'
-import SalesInCountries from '@views/dashboards/crm/SalesInCountries'
-import UserTable from '@views/dashboards/crm/UserTable'
 import FollowUpsDue from '@views/dashboards/crm/FollowUpsDue'
+import L4Overview from '@views/dashboards/crm/L4Overview'
 
-// Server Action Imports
-import { getServerMode } from '@core/utils/serverHelpers'
+import prisma from '@/libs/prisma'
+import { requireCurrentUser } from '@/libs/serverAuth'
+import { getLeadVisibilityWhere, canViewAcompanhamento } from '@/utils/permissions'
 
-// Data Imports
-import { getUserData } from '@/app/server/actions'
+export const dynamic = 'force-dynamic'
 
-/**
- * ! If you need data using an API call, uncomment the below API code, update the `process.env.API_URL` variable in the
- * ! `.env` file found at root of your project and also update the API endpoints like `/apps/user-list` in below example.
- * ! Also, remove the above server action import and the action itself from the `src/app/server/actions.ts` file to clean up unused code
- * ! because we've used the server action for getting our static data.
- */
-/* const getUserData = async () => {
-  // Vars
-  const res = await fetch(`${process.env.API_URL}/apps/user-list`)
+const fmt = n => Number(n || 0).toLocaleString('pt-BR')
 
-  if (!res.ok) {
-    throw new Error('Failed to fetch userData')
-  }
-
-  return res.json()
-} */
 const DashboardCRM = async props => {
-  // Vars
   const params = await props.params
-  const data = await getUserData()
-  const serverMode = await getServerMode()
+  const user = await requireCurrentUser()
+
+  const where = user ? getLeadVisibilityWhere(user.role) : { id: '__none__' }
+  const verAcompanhamento = user ? canViewAcompanhamento(user.role) : false
+
+  const [totalLeads, comTelefone, comEmail, prospeccao, negociacao, novosHoje, procMonitorados, procNovidade] =
+    await Promise.all([
+      prisma.lead.count({ where }),
+      prisma.lead.count({ where: { ...where, telefone: { not: null } } }),
+      prisma.lead.count({ where: { ...where, email: { not: null } } }),
+      prisma.lead.count({ where: { ...where, pipeline: 'PROSPECCAO' } }),
+      prisma.lead.count({ where: { ...where, pipeline: 'NEGOCIACAO' } }),
+      prisma.lead.count({
+        where: { ...where, createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } }
+      }),
+      verAcompanhamento ? prisma.processoMonitorado.count() : Promise.resolve(0),
+      verAcompanhamento
+        ? prisma.processoMonitorado.count({ where: { statusConsulta: 'NOVA_MOVIMENTACAO' } })
+        : Promise.resolve(0)
+    ])
 
   return (
-    <Grid container spacing={6}>
-      <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-        <FollowUpsDue lang={params.lang} />
+    <div className='flex flex-col gap-6'>
+      <div>
+        <Typography variant='h4' className='font-semibold'>
+          Bem-vindo{user?.name ? `, ${user.name.split(' ')[0]}` : ''} 👋
+        </Typography>
+        <Typography color='text.secondary'>Visão geral da operação L4 Ativos</Typography>
+      </div>
+
+      <Grid container spacing={6}>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <CardStatVertical
+            stats={fmt(totalLeads)}
+            title='Leads na carteira'
+            trendNumber={`${fmt(novosHoje)} hoje`}
+            chipText='Total'
+            avatarColor='primary'
+            avatarIcon='ri-user-search-line'
+            avatarSkin='light'
+            chipColor='primary'
+          />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <CardStatVertical
+            stats={fmt(comTelefone)}
+            title='Com telefone'
+            trendNumber={totalLeads ? `${Math.round((comTelefone / totalLeads) * 100)}%` : '0%'}
+            chipText='Contatáveis'
+            avatarColor='success'
+            avatarIcon='ri-phone-line'
+            avatarSkin='light'
+            chipColor='success'
+          />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <CardStatVertical
+            stats={fmt(prospeccao)}
+            title='Em Prospecção'
+            trendNumber='Ativos'
+            chipText='Pipeline'
+            avatarColor='info'
+            avatarIcon='ri-search-line'
+            avatarSkin='light'
+            chipColor='info'
+          />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <CardStatVertical
+            stats={fmt(negociacao)}
+            title='Em Negociação'
+            trendNumber='Ativos'
+            chipText='Pipeline'
+            avatarColor='warning'
+            avatarIcon='ri-handshake-line'
+            avatarSkin='light'
+            chipColor='warning'
+          />
+        </Grid>
+
+        {verAcompanhamento && (
+          <>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <CardStatVertical
+                stats={fmt(procMonitorados)}
+                title='Processos monitorados'
+                trendNumber='DataJud'
+                chipText='Acompanhamento'
+                avatarColor='secondary'
+                avatarIcon='ri-scales-3-line'
+                avatarSkin='light'
+                chipColor='secondary'
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+              <CardStatVertical
+                stats={fmt(procNovidade)}
+                title='Com nova movimentação'
+                trendNumber='Atenção'
+                chipText='Novidade'
+                avatarColor='error'
+                avatarIcon='ri-notification-badge-line'
+                avatarSkin='light'
+                chipColor='error'
+              />
+            </Grid>
+          </>
+        )}
+
+        <Grid size={{ xs: 12, md: 6 }}>
+          <L4Overview />
+        </Grid>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <FollowUpsDue lang={params.lang} />
+        </Grid>
       </Grid>
-      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-        <CardStatVertical
-          stats='14.881'
-          title='Total Leads PGFN'
-          trendNumber='0%'
-          chipText='Base PGFN'
-          avatarColor='primary'
-          avatarIcon='ri-database-2-line'
-          avatarSkin='light'
-          chipColor='secondary'
-        />
-      </Grid>
-      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-        <CardStatVertical
-          stats='282'
-          title='Com Telefone'
-          trendNumber='0%'
-          chipText='Contatos'
-          avatarColor='success'
-          avatarIcon='ri-phone-line'
-          avatarSkin='light'
-          chipColor='secondary'
-        />
-      </Grid>
-      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-        <CardStatVertical
-          stats='135'
-          title='Com Email'
-          trendNumber='0%'
-          chipText='Contatos'
-          avatarColor='info'
-          avatarIcon='ri-mail-line'
-          avatarSkin='light'
-          chipColor='secondary'
-        />
-      </Grid>
-      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-        <CardStatVertical
-          stats='0'
-          title='Pipeline Aberto'
-          trendNumber='0%'
-          chipText='Ativos'
-          avatarColor='warning'
-          avatarIcon='ri-folder-chart-line'
-          avatarSkin='light'
-          chipColor='secondary'
-        />
-      </Grid>
-      <Grid size={{ xs: 12, md: 4 }}>
-        <Award />
-      </Grid>
-      <Grid size={{ xs: 12, md: 2, sm: 3 }}>
-        <CardStatVertical
-          stats='155k'
-          title='Total Orders'
-          trendNumber='22%'
-          chipText='Last 4 Month'
-          avatarColor='primary'
-          avatarIcon='ri-shopping-cart-line'
-          avatarSkin='light'
-          chipColor='secondary'
-        />
-      </Grid>
-      <Grid size={{ xs: 12, sm: 3, md: 2 }}>
-        <CardStatVertical
-          stats='$13.4k'
-          title='Total Sales'
-          trendNumber='38%'
-          chipText='Last Six Months'
-          avatarColor='success'
-          avatarIcon='ri-handbag-line'
-          avatarSkin='light'
-          chipColor='secondary'
-        />
-      </Grid>
-      <Grid size={{ xs: 12, sm: 3, md: 2 }}>
-        <StackedBarChart />
-      </Grid>
-      <Grid size={{ xs: 12, sm: 3, md: 2 }}>
-        <DonutChart />
-      </Grid>
-      <Grid size={{ xs: 12, md: 4 }}>
-        <OrganicSessions />
-      </Grid>
-      <Grid size={{ xs: 12, md: 8 }}>
-        <ProjectTimeline />
-      </Grid>
-      <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-        <WeeklyOverview />
-      </Grid>
-      <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-        <SocialNetworkVisits />
-      </Grid>
-      <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-        <MonthlyBudget />
-      </Grid>
-      <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-        <MeetingSchedule />
-      </Grid>
-      <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-        <ExternalLinks />
-      </Grid>
-      <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-        <PaymentHistory serverMode={serverMode} />
-      </Grid>
-      <Grid size={{ xs: 12, md: 4 }}>
-        <SalesInCountries />
-      </Grid>
-      <Grid size={{ xs: 12, md: 8 }}>
-        <UserTable tableData={data} />
-      </Grid>
-    </Grid>
+    </div>
   )
 }
 

@@ -15,6 +15,7 @@ import Typography from '@mui/material/Typography'
 import prisma from '@/libs/prisma'
 import { requireCurrentUser } from '@/libs/serverAuth'
 import { canViewAcompanhamento } from '@/utils/permissions'
+import ConsultarButton from '@/views/acompanhamento/ConsultarButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -79,13 +80,16 @@ export default async function AcompanhamentoProcessualPage(props) {
 
   return (
     <div className='flex flex-col gap-6'>
-      <div>
-        <Typography variant='h4' className='font-semibold'>
-          Acompanhamento Processual
-        </Typography>
-        <Typography color='text.secondary'>
-          Processos em posse da L4 para consulta diaria de movimentacoes.
-        </Typography>
+      <div className='flex flex-wrap items-start justify-between gap-4'>
+        <div>
+          <Typography variant='h4' className='font-semibold'>
+            Acompanhamento Processual
+          </Typography>
+          <Typography color='text.secondary'>
+            Processos em posse da L4 — consulta automática de movimentações via DataJud (CNJ).
+          </Typography>
+        </div>
+        <ConsultarButton />
       </div>
 
       <Grid container spacing={6}>
