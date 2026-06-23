@@ -97,10 +97,8 @@ const Login = () => {
           className='absolute -right-24 -bottom-24 opacity-10'
           style={{ width: 460, height: 460, border: '40px solid #fff', transform: 'rotate(45deg)', borderRadius: 24 }}
         />
-        <div className='relative flex items-center gap-3'>
-          <span className='text-white text-3xl font-extrabold tracking-tight'>
-            L4<span style={{ color: '#9cc3ff' }}>·</span>ATIVOS
-          </span>
+        <div className='relative flex items-center'>
+          <img src='/images/brand/l4-ativos-horizontal-white.png' alt='L4 Ativos' style={{ height: 40 }} />
         </div>
 
         <div className='relative flex flex-col gap-4 max-is-[460px]'>
@@ -133,9 +131,8 @@ const Login = () => {
       {/* Formulário */}
       <div className='flex justify-center items-center bs-full bg-backgroundPaper !min-is-full p-6 md:!min-is-[unset] md:p-12 md:is-[480px]'>
         <div className='flex flex-col gap-6 is-full sm:is-auto md:is-full sm:max-is-[400px] md:max-is-[unset]'>
-          <div className='flex flex-col items-start gap-2'>
-            <img src='/images/brand/l4-ativos-horizontal.png' alt='L4 Ativos' className='block dark:hidden' style={{ height: 44 }} />
-            <img src='/images/brand/l4-isotipo.png' alt='L4 Ativos' className='hidden dark:block' style={{ height: 44 }} />
+          <div className='flex flex-col items-start gap-2 md:hidden'>
+            <img src='/images/brand/l4-ativos-horizontal.png' alt='L4 Ativos' style={{ height: 40 }} />
           </div>
 
           <div>

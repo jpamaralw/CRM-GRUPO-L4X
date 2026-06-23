@@ -14,6 +14,20 @@ export const dynamic = 'force-dynamic'
 
 const fmt = n => Number(n || 0).toLocaleString('pt-BR')
 
+const ROLE_SUBTITLE = {
+  SDR: 'Foque na prospecção: qualifique e avance seus leads para a negociação.',
+  FINANCEIRO_SDR: 'Foque na prospecção: qualifique e avance seus leads para a negociação.',
+  CLOSER: 'Suas negociações em andamento. Agende reuniões e feche mais contratos.',
+  GESTOR: 'Visão geral da operação. Acompanhe o time e os resultados.',
+  SOCIO: 'Visão executiva do Grupo L4. Resultados e operação em tempo real.',
+  TI: 'Painel completo da operação L4 Ativos.',
+  ADVOGADO: 'Acompanhe as movimentações processuais dos ativos da L4.',
+  RECEPCAO: 'Atendimento e acompanhamento dos processos da L4.'
+}
+
+const hoje = () =>
+  new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })
+
 const DashboardCRM = async props => {
   const params = await props.params
   const user = await requireCurrentUser()
@@ -39,11 +53,27 @@ const DashboardCRM = async props => {
 
   return (
     <div className='flex flex-col gap-6'>
-      <div>
-        <Typography variant='h4' className='font-semibold'>
-          Bem-vindo{user?.name ? `, ${user.name.split(' ')[0]}` : ''} 👋
-        </Typography>
-        <Typography color='text.secondary'>Visão geral da operação L4 Ativos</Typography>
+      <div
+        className='relative overflow-hidden rounded-2xl p-6 sm:p-8'
+        style={{
+          background:
+            'radial-gradient(900px 400px at 90% -30%, #0a5bc4 0%, transparent 55%), linear-gradient(120deg, #002a66 0%, #004499 60%, #00367d 100%)'
+        }}
+      >
+        <div
+          aria-hidden
+          className='absolute -right-16 -bottom-20 opacity-10'
+          style={{ width: 320, height: 320, border: '32px solid #fff', transform: 'rotate(45deg)', borderRadius: 20 }}
+        />
+        <div className='relative flex flex-col gap-1'>
+          <Typography className='text-white/70 text-sm capitalize'>{hoje()}</Typography>
+          <Typography variant='h4' className='text-white font-bold'>
+            Olá{user?.name ? `, ${user.name.split(' ')[0]}` : ''} 👋
+          </Typography>
+          <Typography className='text-white/85 max-is-[640px]'>
+            {ROLE_SUBTITLE[user?.role] || 'Visão geral da operação L4 Ativos.'}
+          </Typography>
+        </div>
       </div>
 
       <Grid container spacing={6}>
