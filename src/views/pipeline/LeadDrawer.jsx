@@ -40,6 +40,22 @@ const formatDate = value => {
   return new Date(value).toLocaleString('pt-BR')
 }
 
+const onlyDigits = v => String(v || '').replace(/\D/g, '')
+
+const waLink = phone => {
+  const d = onlyDigits(phone)
+
+  return d.length >= 10 ? `https://wa.me/55${d}` : null
+}
+
+// yyyy-mm-dd para o input date
+const toDateInput = value => {
+  if (!value) return ''
+  const d = new Date(value)
+
+  return Number.isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10)
+}
+
 const InfoRow = ({ label, value }) => (
   <div className='flex justify-between gap-4'>
     <Typography variant='body2' color='text.secondary'>
@@ -58,6 +74,11 @@ const LeadDrawer = ({ leadId, onClose, onUpdated }) => {
   const [teamUsers, setTeamUsers] = useState(null)
   const [note, setNote] = useState('')
   const [savingNote, setSavingNote] = useState(false)
+  const [followUp, setFollowUp] = useState('')
+
+  useEffect(() => {
+    setFollowUp(toDateInput(lead?.nextFollowUpAt))
+  }, [lead?.nextFollowUpAt])
 
   useEffect(() => {
     if (!leadId) {
@@ -135,6 +156,35 @@ const LeadDrawer = ({ leadId, onClose, onUpdated }) => {
       setUpdating(false)
     }
   }
+
+  const quickPatch = async (body, successMsg) => {
+    setUpdating(true)
+
+    try {
+      const res = await fetch(`/api/pipeline/leads/${leadId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) throw new Error(data.error || 'Erro ao atualizar')
+
+      setLead(prev => ({ ...prev, ...data.lead }))
+      onUpdated?.(data.lead)
+      toast.success(successMsg)
+    } catch (err) {
+      toast.error(err.message)
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  const handleRegistrarContato = () => quickPatch({ lastContactAt: new Date().toISOString() }, 'Contato registrado')
+
+  const handleAgendarFollowUp = () =>
+    quickPatch({ nextFollowUpAt: followUp ? new Date(followUp).toISOString() : null }, 'Follow-up agendado')
 
   const handleAddNote = async () => {
     if (!note.trim()) return
@@ -240,6 +290,48 @@ const LeadDrawer = ({ leadId, onClose, onUpdated }) => {
 
           <div className='flex flex-col gap-2'>
             <Typography variant='subtitle2'>Contato</Typography>
+
+            {(lead.telefone || lead.email) && (
+              <div className='flex gap-2 flex-wrap'>
+                {waLink(lead.telefone) && (
+                  <Button
+                    size='small'
+                    variant='contained'
+                    color='success'
+                    component='a'
+                    href={waLink(lead.telefone)}
+                    target='_blank'
+                    rel='noreferrer'
+                    startIcon={<i className='ri-whatsapp-line' />}
+                  >
+                    WhatsApp
+                  </Button>
+                )}
+                {lead.telefone && (
+                  <Button
+                    size='small'
+                    variant='outlined'
+                    component='a'
+                    href={`tel:${onlyDigits(lead.telefone)}`}
+                    startIcon={<i className='ri-phone-line' />}
+                  >
+                    Ligar
+                  </Button>
+                )}
+                {lead.email && (
+                  <Button
+                    size='small'
+                    variant='outlined'
+                    component='a'
+                    href={`mailto:${lead.email}`}
+                    startIcon={<i className='ri-mail-line' />}
+                  >
+                    E-mail
+                  </Button>
+                )}
+              </div>
+            )}
+
             <InfoRow label='Telefone' value={lead.telefone} />
             <InfoRow label='E-mail' value={lead.email} />
             {teamUsers?.length > 0 ? (
@@ -262,8 +354,35 @@ const LeadDrawer = ({ leadId, onClose, onUpdated }) => {
             ) : (
               <InfoRow label='Responsável' value={lead.assignedTo?.name || lead.assignedTo?.email} />
             )}
-            <InfoRow label='Próximo follow-up' value={formatDate(lead.nextFollowUpAt)} />
             <InfoRow label='Último contato' value={formatDate(lead.lastContactAt)} />
+
+            <div className='flex items-end gap-2 mt-1'>
+              <TextField
+                size='small'
+                type='date'
+                label='Próximo follow-up'
+                value={followUp}
+                onChange={e => setFollowUp(e.target.value)}
+                disabled={updating}
+                fullWidth
+                slotProps={{ inputLabel: { shrink: true } }}
+              />
+              <Button size='small' variant='outlined' onClick={handleAgendarFollowUp} disabled={updating}>
+                Agendar
+              </Button>
+            </div>
+
+            <Button
+              size='small'
+              variant='tonal'
+              color='primary'
+              onClick={handleRegistrarContato}
+              disabled={updating}
+              startIcon={<i className='ri-check-double-line' />}
+              className='self-start'
+            >
+              Registrar contato agora
+            </Button>
           </div>
 
           {lead.processosMonitorados?.length > 0 && (
