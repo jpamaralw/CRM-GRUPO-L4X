@@ -15,7 +15,6 @@ import InputAdornment from '@mui/material/InputAdornment'
 import Checkbox from '@mui/material/Checkbox'
 import Button from '@mui/material/Button'
 import FormControlLabel from '@mui/material/FormControlLabel'
-import Divider from '@mui/material/Divider'
 import Alert from '@mui/material/Alert'
 
 // Third-party Imports
@@ -23,48 +22,29 @@ import { signIn } from 'next-auth/react'
 import { Controller, useForm } from 'react-hook-form'
 import { valibotResolver } from '@hookform/resolvers/valibot'
 import { object, minLength, string, email, pipe, nonEmpty } from 'valibot'
-import classnames from 'classnames'
-
-// Component Imports
-import Logo from '@components/layout/shared/Logo'
-
-// Config Imports
-import themeConfig from '@configs/themeConfig'
-
-// Hook Imports
-import { useImageVariant } from '@core/hooks/useImageVariant'
-import { useSettings } from '@core/hooks/useSettings'
 
 // Util Imports
 import { getLocalizedUrl } from '@/utils/i18n'
 
 const schema = object({
-  email: pipe(string(), minLength(1, 'This field is required'), email('Please enter a valid email address')),
-  password: pipe(
-    string(),
-    nonEmpty('This field is required'),
-    minLength(5, 'Password must be at least 5 characters long')
-  )
+  email: pipe(string(), minLength(1, 'Informe seu e-mail'), email('Informe um e-mail válido')),
+  password: pipe(string(), nonEmpty('Informe sua senha'), minLength(5, 'A senha deve ter ao menos 5 caracteres'))
 })
 
-const Login = ({ mode }) => {
-  // States
+const TRUST = [
+  { icon: 'ri-shield-check-line', label: 'Desde 2018 no mercado' },
+  { icon: 'ri-exchange-funds-line', label: '+11 mil antecipações realizadas' },
+  { icon: 'ri-bank-line', label: '+R$ 3 bilhões em processos geridos' }
+]
+
+const Login = () => {
   const [isPasswordShown, setIsPasswordShown] = useState(false)
   const [errorState, setErrorState] = useState(null)
+  const [loading, setLoading] = useState(false)
 
-  // Vars
-  const darkImg = '/images/pages/auth-v2-mask-1-dark.png'
-  const lightImg = '/images/pages/auth-v2-mask-1-light.png'
-  const darkIllustration = '/images/illustrations/auth/v2-login-dark.png'
-  const lightIllustration = '/images/illustrations/auth/v2-login-light.png'
-  const borderedDarkIllustration = '/images/illustrations/auth/v2-login-dark-border.png'
-  const borderedLightIllustration = '/images/illustrations/auth/v2-login-light-border.png'
-
-  // Hooks
   const router = useRouter()
   const searchParams = useSearchParams()
   const { lang: locale } = useParams()
-  const { settings } = useSettings()
 
   const {
     control,
@@ -72,118 +52,133 @@ const Login = ({ mode }) => {
     formState: { errors }
   } = useForm({
     resolver: valibotResolver(schema),
-    defaultValues: {
-      email: 'admin@materialize.com',
-      password: 'admin'
-    }
+    defaultValues: { email: '', password: '' }
   })
-
-  const authBackground = useImageVariant(mode, lightImg, darkImg)
-
-  const characterIllustration = useImageVariant(
-    mode,
-    lightIllustration,
-    darkIllustration,
-    borderedLightIllustration,
-    borderedDarkIllustration
-  )
 
   const handleClickShowPassword = () => setIsPasswordShown(show => !show)
 
   const onSubmit = async data => {
+    setLoading(true)
+
     const res = await signIn('credentials', {
       email: data.email,
       password: data.password,
       redirect: false
     })
 
+    setLoading(false)
+
     if (res && res.ok && res.error === null) {
-      // Vars
       const redirectURL = searchParams.get('redirectTo') ?? '/'
 
       router.replace(getLocalizedUrl(redirectURL, locale))
-    } else {
-      if (res?.error) {
-        const error = JSON.parse(res.error)
-
-        setErrorState(error)
+    } else if (res?.error) {
+      try {
+        setErrorState(JSON.parse(res.error))
+      } catch {
+        setErrorState({ message: ['E-mail ou senha inválidos'] })
       }
     }
   }
 
   return (
-    <div className='flex bs-full justify-center'>
+    <div className='flex bs-full min-bs-[100dvh]'>
+      {/* Painel de marca */}
       <div
-        className={classnames(
-          'flex bs-full items-center justify-center flex-1 min-bs-[100dvh] relative p-6 max-md:hidden',
-          {
-            'border-ie': settings.skin === 'bordered'
-          }
-        )}
+        className='relative flex-1 flex-col justify-between p-12 max-md:hidden md:flex overflow-hidden'
+        style={{
+          background:
+            'radial-gradient(1200px 600px at 20% -10%, #0a5bc4 0%, transparent 60%), linear-gradient(135deg, #002a66 0%, #004499 55%, #00367d 100%)'
+        }}
       >
-        <div className='pli-6 max-lg:mbs-40 lg:mbe-24'>
-          <img
-            src={characterIllustration}
-            alt='character-illustration'
-            className='max-bs-[673px] max-is-full bs-auto'
-          />
+        {/* losango sutil de fundo */}
+        <div
+          aria-hidden
+          className='absolute -right-24 -bottom-24 opacity-10'
+          style={{ width: 460, height: 460, border: '40px solid #fff', transform: 'rotate(45deg)', borderRadius: 24 }}
+        />
+        <div className='relative flex items-center gap-3'>
+          <span className='text-white text-3xl font-extrabold tracking-tight'>
+            L4<span style={{ color: '#9cc3ff' }}>·</span>ATIVOS
+          </span>
         </div>
-        <img src={authBackground} className='absolute bottom-[4%] z-[-1] is-full max-md:hidden' />
-      </div>
-      <div className='flex justify-center items-center bs-full bg-backgroundPaper !min-is-full p-6 md:!min-is-[unset] md:p-12 md:is-[480px]'>
-        <div className='absolute block-start-5 sm:block-start-[38px] inline-start-6 sm:inline-start-[38px]'>
-          <Logo />
-        </div>
-        <div className='flex flex-col gap-5 is-full sm:is-auto md:is-full sm:max-is-[400px] md:max-is-[unset]'>
-          <div>
-            <Typography variant='h4'>{`Welcome to ${themeConfig.templateName}!👋🏻`}</Typography>
-            <Typography>Please sign-in to your account and start the adventure</Typography>
-          </div>
-          <Alert icon={false} className='bg-[var(--mui-palette-primary-lightOpacity)]'>
-            <Typography variant='body2' color='primary.main'>
-              Email: <span className='font-medium'>admin@materialize.com</span> / Pass:{' '}
-              <span className='font-medium'>admin</span>
-            </Typography>
-          </Alert>
 
-          <form
-            noValidate
-            action={() => {}}
-            autoComplete='off'
-            onSubmit={handleSubmit(onSubmit)}
-            className='flex flex-col gap-5'
-          >
+        <div className='relative flex flex-col gap-4 max-is-[460px]'>
+          <Typography variant='h3' className='text-white font-bold leading-tight'>
+            Antecipe seu crédito judicial com segurança.
+          </Typography>
+          <Typography className='text-white/80'>
+            CRM do Grupo L4 — prospecção, negociação e acompanhamento processual de precatórios, RPV e ativos
+            tributários em um só lugar.
+          </Typography>
+
+          <div className='flex flex-col gap-3 mt-4'>
+            {TRUST.map(t => (
+              <div key={t.label} className='flex items-center gap-3 text-white/90'>
+                <span
+                  className='flex items-center justify-center rounded-lg'
+                  style={{ width: 36, height: 36, background: 'rgba(255,255,255,0.12)' }}
+                >
+                  <i className={`${t.icon} text-[20px]`} />
+                </span>
+                <Typography className='text-white/90 font-medium'>{t.label}</Typography>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <Typography className='relative text-white/50 text-sm'>Grupo L4 · L4 Ativos · L4 Taxx</Typography>
+      </div>
+
+      {/* Formulário */}
+      <div className='flex justify-center items-center bs-full bg-backgroundPaper !min-is-full p-6 md:!min-is-[unset] md:p-12 md:is-[480px]'>
+        <div className='flex flex-col gap-6 is-full sm:is-auto md:is-full sm:max-is-[400px] md:max-is-[unset]'>
+          <div className='flex flex-col items-start gap-2'>
+            <img src='/images/brand/l4-ativos-horizontal.png' alt='L4 Ativos' className='block dark:hidden' style={{ height: 44 }} />
+            <img src='/images/brand/l4-isotipo.png' alt='L4 Ativos' className='hidden dark:block' style={{ height: 44 }} />
+          </div>
+
+          <div>
+            <Typography variant='h4' className='font-semibold'>
+              Bem-vindo de volta 👋
+            </Typography>
+            <Typography color='text.secondary'>Acesse o CRM do Grupo L4 para continuar.</Typography>
+          </div>
+
+          {errorState && (
+            <Alert severity='error' onClose={() => setErrorState(null)}>
+              {errorState?.message?.[0] || 'E-mail ou senha inválidos'}
+            </Alert>
+          )}
+
+          <form noValidate autoComplete='off' onSubmit={handleSubmit(onSubmit)} className='flex flex-col gap-5'>
             <Controller
               name='email'
               control={control}
-              rules={{ required: true }}
               render={({ field }) => (
                 <TextField
                   {...field}
                   fullWidth
                   autoFocus
                   type='email'
-                  label='Email'
+                  label='E-mail corporativo'
+                  placeholder='nome@l4ativos.com.br'
                   onChange={e => {
                     field.onChange(e.target.value)
                     errorState !== null && setErrorState(null)
                   }}
-                  {...((errors.email || errorState !== null) && {
-                    error: true,
-                    helperText: errors?.email?.message || errorState?.message[0]
-                  })}
+                  {...(errors.email && { error: true, helperText: errors?.email?.message })}
                 />
               )}
             />
             <Controller
               name='password'
               control={control}
-              rules={{ required: true }}
               render={({ field }) => (
                 <TextField
                   {...field}
                   fullWidth
-                  label='Password'
+                  label='Senha'
                   id='login-password'
                   type={isPasswordShown ? 'text' : 'password'}
                   onChange={e => {
@@ -198,7 +193,7 @@ const Login = ({ mode }) => {
                             edge='end'
                             onClick={handleClickShowPassword}
                             onMouseDown={e => e.preventDefault()}
-                            aria-label='toggle password visibility'
+                            aria-label='mostrar senha'
                           >
                             <i className={isPasswordShown ? 'ri-eye-off-line' : 'ri-eye-line'} />
                           </IconButton>
@@ -211,36 +206,23 @@ const Login = ({ mode }) => {
               )}
             />
             <div className='flex justify-between items-center flex-wrap gap-x-3 gap-y-1'>
-              <FormControlLabel control={<Checkbox defaultChecked />} label='Remember me' />
+              <FormControlLabel control={<Checkbox defaultChecked />} label='Lembrar de mim' />
               <Typography
                 className='text-end'
                 color='primary.main'
                 component={Link}
                 href={getLocalizedUrl('/forgot-password', locale)}
               >
-                Forgot password?
+                Esqueci a senha
               </Typography>
             </div>
-            <Button fullWidth variant='contained' type='submit'>
-              Log In
+            <Button fullWidth variant='contained' type='submit' disabled={loading}>
+              {loading ? 'Entrando...' : 'Entrar'}
             </Button>
-            <div className='flex justify-center items-center flex-wrap gap-2'>
-              <Typography>New on our platform?</Typography>
-              <Typography component={Link} href={getLocalizedUrl('/register', locale)} color='primary.main'>
-                Create an account
-              </Typography>
-            </div>
+            <Typography variant='body2' color='text.secondary' className='text-center'>
+              Acesso restrito à equipe do Grupo L4. Problemas para entrar? Fale com o TI.
+            </Typography>
           </form>
-          <Divider className='gap-3'>or</Divider>
-          <Button
-            color='secondary'
-            className='self-center text-textPrimary'
-            startIcon={<img src='/images/logos/google.png' alt='Google' width={22} />}
-            sx={{ '& .MuiButton-startIcon': { marginInlineEnd: 3 } }}
-            onClick={() => signIn('google')}
-          >
-            Sign in with Google
-          </Button>
         </div>
       </div>
     </div>
