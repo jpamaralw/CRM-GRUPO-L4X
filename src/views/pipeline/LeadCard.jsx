@@ -17,6 +17,20 @@ const PRIORIDADE_COLOR = {
 
 const SEGMENTO_COLOR = SEGMENTOS.reduce((acc, s) => ({ ...acc, [s.key]: s.color }), {})
 
+const PRIORIDADE_ACCENT = {
+  ALTA: 'var(--mui-palette-error-main)',
+  MEDIA: 'var(--mui-palette-warning-main)',
+  BAIXA: 'var(--mui-palette-divider)'
+}
+
+const waLink = phone => {
+  const d = String(phone || '').replace(/\D/g, '')
+
+  if (d.length < 10) return null
+
+  return `https://wa.me/55${d}`
+}
+
 const formatCurrency = value => {
   if (value === null || value === undefined) return null
 
@@ -44,12 +58,16 @@ const LeadCard = ({ lead, onClick }) => {
   const valor = formatCurrency(lead.valorCausa)
   const followUp = formatDate(lead.nextFollowUpAt)
   const segmento = segmentoFromLead(lead)
+  const wa = waLink(lead.telefone)
 
   return (
     <Card
       className='item-draggable lead-card cursor-grab active:cursor-grabbing'
       onClick={onClick}
-      sx={{ '&:hover': { boxShadow: 4 } }}
+      sx={{
+        borderInlineStart: `3px solid ${PRIORIDADE_ACCENT[lead.prioridade] || 'var(--mui-palette-divider)'}`,
+        '&:hover': { boxShadow: 4 }
+      }}
     >
       <CardContent className='flex flex-col gap-2 p-3'>
         {/* Polo ativo em destaque */}
@@ -87,12 +105,26 @@ const LeadCard = ({ lead, onClick }) => {
           <i className='ri-scales-3-line text-[13px] align-middle' /> {lead.numeroProcesso}
         </Typography>
 
-        <div className='flex items-center justify-between mt-1'>
-          {followUp ? (
-            <Chip size='small' icon={<i className='ri-calendar-line' />} label={followUp} variant='outlined' />
-          ) : (
-            <span />
-          )}
+        <div className='flex items-center justify-between mt-1 gap-2'>
+          <div className='flex items-center gap-1.5'>
+            {followUp && (
+              <Chip size='small' icon={<i className='ri-calendar-line' />} label={followUp} variant='outlined' />
+            )}
+            {wa && (
+              <Tooltip title={`WhatsApp: ${lead.telefone}`}>
+                <a
+                  href={wa}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  onClick={e => e.stopPropagation()}
+                  className='flex items-center justify-center rounded-full'
+                  style={{ width: 26, height: 26, background: 'rgba(37,211,102,0.14)', color: '#1faa55' }}
+                >
+                  <i className='ri-whatsapp-line text-[15px]' />
+                </a>
+              </Tooltip>
+            )}
+          </div>
 
           {lead.assignedTo && (
             <Tooltip title={lead.assignedTo.name || lead.assignedTo.email}>

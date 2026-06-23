@@ -4,6 +4,7 @@ import Typography from '@mui/material/Typography'
 import CardStatVertical from '@components/card-statistics/Vertical'
 import FollowUpsDue from '@views/dashboards/crm/FollowUpsDue'
 import L4Overview from '@views/dashboards/crm/L4Overview'
+import MovimentacoesRecentes from '@views/dashboards/crm/MovimentacoesRecentes'
 
 import prisma from '@/libs/prisma'
 import { requireCurrentUser } from '@/libs/serverAuth'
@@ -130,6 +131,11 @@ const DashboardCRM = async props => {
         <Grid size={{ xs: 12, md: 6 }}>
           <FollowUpsDue lang={params.lang} />
         </Grid>
+        {verAcompanhamento && (
+          <Grid size={{ xs: 12 }}>
+            <MovimentacoesRecentes />
+          </Grid>
+        )}
       </Grid>
     </div>
   )
