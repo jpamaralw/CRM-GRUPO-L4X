@@ -4,6 +4,8 @@ import { useParams } from 'next/navigation'
 
 import { useTheme } from '@mui/material/styles'
 
+import { useSession } from 'next-auth/react'
+
 import PerfectScrollbar from 'react-perfect-scrollbar'
 
 import { Menu, SubMenu, MenuItem, MenuSection } from '@menu/vertical-menu'
@@ -11,6 +13,13 @@ import useVerticalNav from '@menu/hooks/useVerticalNav'
 import StyledVerticalNavExpandIcon from '@menu/styles/vertical/StyledVerticalNavExpandIcon'
 import menuItemStyles from '@core/styles/vertical/menuItemStyles'
 import menuSectionStyles from '@core/styles/vertical/menuSectionStyles'
+import {
+  canViewPipeline,
+  canViewAcompanhamento,
+  canManageTeam,
+  canManageAutomations,
+  canAccessSettings
+} from '@/utils/permissions'
 
 const RenderExpandIcon = ({ open, transitionDuration }) => (
   <StyledVerticalNavExpandIcon open={open} transitionDuration={transitionDuration}>
@@ -22,9 +31,21 @@ const VerticalMenu = ({ scrollMenu }) => {
   const theme = useTheme()
   const verticalNavOptions = useVerticalNav()
   const { lang: locale } = useParams()
+  const { data: session } = useSession()
+  const role = session?.user?.role
 
   const { isBreakpointReached, transitionDuration } = verticalNavOptions
   const ScrollWrapper = isBreakpointReached ? 'div' : PerfectScrollbar
+
+  const showProspeccao = canViewPipeline(role, 'PROSPECCAO')
+  const showNegociacao = canViewPipeline(role, 'NEGOCIACAO')
+  const showPosVenda = canViewPipeline(role, 'POS_VENDA')
+  const showComercial = showProspeccao || showNegociacao || showPosVenda
+  const showJuridico = canViewAcompanhamento(role)
+  const showEquipe = canManageTeam(role)
+  const showAutomacoes = canManageAutomations(role)
+  const showConfig = canAccessSettings(role)
+  const showGestao = showEquipe || showAutomacoes || showConfig
 
   return (
     <ScrollWrapper
@@ -49,31 +70,46 @@ const VerticalMenu = ({ scrollMenu }) => {
           Dashboard
         </MenuItem>
 
-        <MenuSection label='Comercial'>
-          <SubMenu label='Pipelines' icon={<i className='ri-git-branch-line' />}>
-            <MenuItem href={`/${locale}/pipeline?pipeline=PROSPECCAO`}>Prospeccao</MenuItem>
-            <MenuItem href={`/${locale}/pipeline?pipeline=NEGOCIACAO`}>Negociacao</MenuItem>
-            <MenuItem href={`/${locale}/pipeline?pipeline=POS_VENDA`}>Pos-venda</MenuItem>
-          </SubMenu>
-        </MenuSection>
+        {showComercial && (
+          <MenuSection label='Comercial'>
+            <SubMenu label='Pipelines' icon={<i className='ri-git-branch-line' />} defaultOpen>
+              {showProspeccao && <MenuItem href={`/${locale}/pipeline?pipeline=PROSPECCAO`}>Prospecção</MenuItem>}
+              {showNegociacao && <MenuItem href={`/${locale}/pipeline?pipeline=NEGOCIACAO`}>Negociação</MenuItem>}
+              {showPosVenda && <MenuItem href={`/${locale}/pipeline?pipeline=POS_VENDA`}>Pós-venda</MenuItem>}
+            </SubMenu>
+            <MenuItem href={`/${locale}/resultados`} icon={<i className='ri-bar-chart-grouped-line' />}>
+              Resultados
+            </MenuItem>
+          </MenuSection>
+        )}
 
-        <MenuSection label='Juridico'>
-          <MenuItem href={`/${locale}/acompanhamento-processual`} icon={<i className='ri-scales-3-line' />}>
-            Acompanhamento Processual
-          </MenuItem>
-        </MenuSection>
+        {showJuridico && (
+          <MenuSection label='Jurídico'>
+            <MenuItem href={`/${locale}/acompanhamento-processual`} icon={<i className='ri-scales-3-line' />}>
+              Acompanhamento Processual
+            </MenuItem>
+          </MenuSection>
+        )}
 
-        <MenuSection label='Gestao'>
-          <MenuItem href={`/${locale}/equipe`} icon={<i className='ri-team-line' />}>
-            Equipe
-          </MenuItem>
-          <MenuItem href={`/${locale}/automacoes`} icon={<i className='ri-robot-line' />}>
-            Automacoes
-          </MenuItem>
-          <MenuItem href={`/${locale}/configuracoes`} icon={<i className='ri-settings-3-line' />}>
-            Configuracoes
-          </MenuItem>
-        </MenuSection>
+        {showGestao && (
+          <MenuSection label='Gestão'>
+            {showEquipe && (
+              <MenuItem href={`/${locale}/equipe`} icon={<i className='ri-team-line' />}>
+                Equipe
+              </MenuItem>
+            )}
+            {showAutomacoes && (
+              <MenuItem href={`/${locale}/automacoes`} icon={<i className='ri-robot-line' />}>
+                Automações
+              </MenuItem>
+            )}
+            {showConfig && (
+              <MenuItem href={`/${locale}/configuracoes`} icon={<i className='ri-settings-3-line' />}>
+                Configurações
+              </MenuItem>
+            )}
+          </MenuSection>
+        )}
       </Menu>
     </ScrollWrapper>
   )

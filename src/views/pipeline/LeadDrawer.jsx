@@ -18,7 +18,7 @@ import Button from '@mui/material/Button'
 
 import { toast } from 'react-toastify'
 
-import { PIPELINES, VALID_TRANSITIONS } from '@/utils/permissions'
+import { PIPELINES } from '@/utils/permissions'
 
 const ALL_STATUSES = Object.values(PIPELINES)
   .flatMap(pipeline => pipeline.statuses)
@@ -164,7 +164,9 @@ const LeadDrawer = ({ leadId, onClose, onUpdated }) => {
 
   const open = Boolean(leadId)
   const currentStatus = lead?.statusCrm
-  const nextOptions = currentStatus ? VALID_TRANSITIONS[currentStatus] || [] : []
+
+  // Qualquer movimentação é permitida — oferecemos todos os status (registrado no histórico).
+  const nextOptions = Object.keys(ALL_STATUSES).filter(key => key !== currentStatus)
 
   return (
     <Drawer anchor='right' open={open} onClose={onClose} sx={{ '& .MuiDrawer-paper': { width: { xs: '100%', sm: 420 } } }}>
@@ -185,7 +187,10 @@ const LeadDrawer = ({ leadId, onClose, onUpdated }) => {
       {!loading && lead && (
         <div className='flex flex-col gap-4 p-4 overflow-y-auto'>
           <div>
-            <Typography variant='h6'>{lead.numeroProcesso}</Typography>
+            <Typography variant='h6'>{lead.autor || lead.reu || 'Lead'}</Typography>
+            <Typography variant='caption' color='text.secondary'>
+              <i className='ri-scales-3-line align-middle' /> {lead.numeroProcesso}
+            </Typography>
             <div className='flex items-center gap-2 mt-1 flex-wrap'>
               {lead.tribunal && <Chip size='small' variant='outlined' label={lead.tribunal} />}
               {lead.prioridade && <Chip size='small' label={lead.prioridade} color='warning' variant='tonal' />}

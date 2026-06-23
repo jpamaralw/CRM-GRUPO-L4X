@@ -10,12 +10,14 @@ import Tab from '@mui/material/Tab'
 import Button from '@mui/material/Button'
 import TextField from '@mui/material/TextField'
 import InputAdornment from '@mui/material/InputAdornment'
+import Chip from '@mui/material/Chip'
 
 import { toast } from 'react-toastify'
 
 import PipelineColumn from './PipelineColumn'
 import LeadDrawer from './LeadDrawer'
 import NewLeadDialog from './NewLeadDialog'
+import { segmentoFromLead, SEGMENTO_LABEL } from '@/utils/permissions'
 
 const PipelineBoard = ({ pipelines, activePipeline, leads, lang }) => {
   const router = useRouter()
@@ -24,20 +26,38 @@ const PipelineBoard = ({ pipelines, activePipeline, leads, lang }) => {
   const [drawerLeadId, setDrawerLeadId] = useState(null)
   const [newLeadOpen, setNewLeadOpen] = useState(false)
   const [search, setSearch] = useState('')
+  const [segmento, setSegmento] = useState('TODOS')
 
   const pipelineDef = pipelines.find(pipeline => pipeline.key === activePipeline)
+
+  // Segmentos presentes nos leads desta pipeline (Precatório / RPV / Tributário / Despejo...)
+  const segmentosDisponiveis = useMemo(() => {
+    const counts = {}
+
+    leadsState.forEach(lead => {
+      const seg = segmentoFromLead(lead)
+
+      counts[seg] = (counts[seg] || 0) + 1
+    })
+
+    return Object.entries(counts)
+      .map(([key, count]) => ({ key, count }))
+      .sort((a, b) => b.count - a.count)
+  }, [leadsState])
 
   const visibleLeads = useMemo(() => {
     const term = search.trim().toLowerCase()
 
-    if (!term) return leadsState
+    return leadsState.filter(lead => {
+      if (segmento !== 'TODOS' && segmentoFromLead(lead) !== segmento) return false
 
-    return leadsState.filter(lead =>
-      [lead.numeroProcesso, lead.autor, lead.reu, lead.telefone, lead.email]
+      if (!term) return true
+
+      return [lead.numeroProcesso, lead.autor, lead.reu, lead.telefone, lead.email]
         .filter(Boolean)
         .some(field => field.toLowerCase().includes(term))
-    )
-  }, [leadsState, search])
+    })
+  }, [leadsState, search, segmento])
 
   const columns = useMemo(() => {
     const grouped = {}
@@ -139,6 +159,31 @@ const PipelineBoard = ({ pipelines, activePipeline, leads, lang }) => {
           }
         }}
       />
+
+      {segmentosDisponiveis.length > 1 && (
+        <div className='flex items-center gap-2 flex-wrap'>
+          <Typography variant='body2' color='text.secondary' className='mie-1'>
+            Ativo:
+          </Typography>
+          <Chip
+            label={`Todos (${leadsState.length})`}
+            size='small'
+            color={segmento === 'TODOS' ? 'primary' : 'default'}
+            variant={segmento === 'TODOS' ? 'filled' : 'outlined'}
+            onClick={() => setSegmento('TODOS')}
+          />
+          {segmentosDisponiveis.map(({ key, count }) => (
+            <Chip
+              key={key}
+              label={`${SEGMENTO_LABEL[key] || key} (${count})`}
+              size='small'
+              color={segmento === key ? 'primary' : 'default'}
+              variant={segmento === key ? 'filled' : 'outlined'}
+              onClick={() => setSegmento(key)}
+            />
+          ))}
+        </div>
+      )}
 
       <div className='flex gap-4 overflow-x-auto pb-4'>
         {pipelineDef.statuses.map(status => (

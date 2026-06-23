@@ -55,11 +55,6 @@ const verticalMenuData = dictionary => [
         label: 'Automações',
         icon: 'ri-robot-line',
         href: '/automacoes'
-      },
-      {
-        label: 'Importar Leads',
-        icon: 'ri-upload-cloud-line',
-        href: '/importar'
       }
     ]
   },

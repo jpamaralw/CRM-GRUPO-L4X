@@ -6,9 +6,6 @@ import { useEffect, useRef } from 'react'
 // Third-party Imports
 import styled from '@emotion/styled'
 
-// Component Imports
-import MaterializeLogo from '@core/svg/Logo'
-
 // Config Imports
 import themeConfig from '@configs/themeConfig'
 
@@ -61,7 +58,8 @@ const Logo = ({ color }) => {
 
   return (
     <div className='flex items-center min-bs-[24px]'>
-      <MaterializeLogo />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src='/images/brand/l4-isotipo.png' alt='L4 Ativos' width={30} height={30} style={{ objectFit: 'contain' }} />
       <LogoText
         color={color}
         ref={logoTextRef}

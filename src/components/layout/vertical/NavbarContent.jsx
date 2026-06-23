@@ -4,10 +4,9 @@ import classnames from 'classnames'
 // Component Imports
 import NavToggle from './NavToggle'
 import NavSearch from '@components/layout/shared/search'
-import LanguageDropdown from '@components/layout/shared/LanguageDropdown'
 import ModeDropdown from '@components/layout/shared/ModeDropdown'
 import ShortcutsDropdown from '@components/layout/shared/ShortcutsDropdown'
-import NotificationsDropdown from '@components/layout/shared/NotificationsDropdown'
+import L4Notifications from '@components/layout/shared/L4Notifications'
 import UserDropdown from '@components/layout/shared/UserDropdown'
 
 // Util Imports
@@ -16,87 +15,40 @@ import { verticalLayoutClasses } from '@layouts/utils/layoutClasses'
 // Vars
 const shortcuts = [
   {
-    url: '/apps/calendar',
-    icon: 'ri-calendar-line',
-    title: 'Calendar',
-    subtitle: 'Appointments'
+    url: '/pipeline?pipeline=PROSPECCAO',
+    icon: 'ri-search-line',
+    title: 'Prospecção',
+    subtitle: 'Pipeline de leads'
   },
   {
-    url: '/apps/invoice/list',
-    icon: 'ri-file-list-3-line',
-    title: 'Invoice App',
-    subtitle: 'Manage Accounts'
+    url: '/pipeline?pipeline=NEGOCIACAO',
+    icon: 'ri-handshake-line',
+    title: 'Negociação',
+    subtitle: 'Fechamentos'
   },
   {
-    url: '/apps/user/list',
-    icon: 'ri-user-3-line',
-    title: 'Users',
-    subtitle: 'Manage Users'
+    url: '/acompanhamento-processual',
+    icon: 'ri-scales-3-line',
+    title: 'Acompanhamento',
+    subtitle: 'Movimentações DataJud'
   },
   {
-    url: '/apps/roles',
-    icon: 'ri-computer-line',
-    title: 'Role Management',
-    subtitle: 'Permissions'
+    url: '/resultados',
+    icon: 'ri-bar-chart-grouped-line',
+    title: 'Resultados',
+    subtitle: 'Funil e metas'
+  },
+  {
+    url: '/equipe',
+    icon: 'ri-team-line',
+    title: 'Equipe',
+    subtitle: 'Membros L4'
   },
   {
     url: '/dashboards/crm',
-    icon: 'ri-pie-chart-2-line',
+    icon: 'ri-dashboard-line',
     title: 'Dashboard',
-    subtitle: 'User Dashboard'
-  },
-  {
-    url: '/pages/account-settings',
-    icon: 'ri-settings-4-line',
-    title: 'Settings',
-    subtitle: 'Account Settings'
-  }
-]
-
-const notifications = [
-  {
-    avatarImage: '/images/avatars/2.png',
-    title: 'Congratulations Flora 🎉',
-    subtitle: 'Won the monthly bestseller gold badge',
-    time: '1h ago',
-    read: false
-  },
-  {
-    title: 'Cecilia Becker',
-    subtitle: 'Accepted your connection',
-    time: '12h ago',
-    read: false
-  },
-  {
-    avatarImage: '/images/avatars/3.png',
-    title: 'Bernard Woods',
-    subtitle: 'You have new message from Bernard Woods',
-    time: 'May 18, 8:26 AM',
-    read: true
-  },
-  {
-    avatarIcon: 'ri-bar-chart-line',
-    avatarColor: 'info',
-    title: 'Monthly report generated',
-    subtitle: 'July month financial report is generated',
-    time: 'Apr 24, 10:30 AM',
-    read: true
-  },
-  {
-    avatarText: 'MG',
-    avatarColor: 'success',
-    title: 'Application has been approved 🚀',
-    subtitle: 'Your Meta Gadgets project application has been approved.',
-    time: 'Feb 17, 12:17 PM',
-    read: true
-  },
-  {
-    avatarIcon: 'ri-mail-line',
-    avatarColor: 'error',
-    title: 'New message from Harry',
-    subtitle: 'You have new message from Harry',
-    time: 'Jan 6, 1:48 PM',
-    read: true
+    subtitle: 'Visão geral'
   }
 ]
 
@@ -108,10 +60,9 @@ const NavbarContent = () => {
         <NavSearch />
       </div>
       <div className='flex items-center'>
-        <LanguageDropdown />
         <ModeDropdown />
         <ShortcutsDropdown shortcuts={shortcuts} />
-        <NotificationsDropdown notifications={notifications} />
+        <L4Notifications />
         <UserDropdown />
       </div>
     </div>

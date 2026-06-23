@@ -16,6 +16,7 @@ import prisma from '@/libs/prisma'
 import { requireCurrentUser } from '@/libs/serverAuth'
 import { canViewAcompanhamento } from '@/utils/permissions'
 import ConsultarButton from '@/views/acompanhamento/ConsultarButton'
+import MarcarVistoButton from '@/views/acompanhamento/MarcarVistoButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,11 +36,24 @@ const statusColor = {
 }
 
 async function getData() {
-  const [total, novas, pendentes, erros, processos, runs] = await Promise.all([
+  const [total, novas, pendentes, erros, novidades, processos, runs] = await Promise.all([
     prisma.processoMonitorado.count(),
     prisma.processoMonitorado.count({ where: { statusConsulta: 'NOVA_MOVIMENTACAO' } }),
     prisma.processoMonitorado.count({ where: { statusConsulta: 'PENDENTE' } }),
     prisma.processoMonitorado.count({ where: { statusConsulta: 'ERRO_CONSULTA' } }),
+    prisma.processoMonitorado.findMany({
+      where: { statusConsulta: 'NOVA_MOVIMENTACAO' },
+      orderBy: { ultimaMovimentacaoAt: 'desc' },
+      take: 30,
+      include: {
+        movimentacoes: {
+          where: { nova: true },
+          orderBy: { dataMovimento: 'desc' },
+          take: 8
+        },
+        lead: { select: { autor: true, reu: true } }
+      }
+    }),
     prisma.processoMonitorado.findMany({
       orderBy: [{ statusConsulta: 'desc' }, { updatedAt: 'desc' }],
       take: 100,
@@ -65,7 +79,7 @@ async function getData() {
     })
   ])
 
-  return { total, novas, pendentes, erros, processos, runs }
+  return { total, novas, pendentes, erros, novidades, processos, runs }
 }
 
 export default async function AcompanhamentoProcessualPage(props) {
@@ -133,6 +147,52 @@ export default async function AcompanhamentoProcessualPage(props) {
             </CardContent>
           </Card>
         </Grid>
+
+        {data.novidades.length > 0 && (
+          <Grid size={{ xs: 12 }}>
+            <Card sx={{ borderInlineStart: '4px solid var(--mui-palette-success-main)' }}>
+              <CardContent className='flex flex-col gap-4'>
+                <Typography variant='h5' className='font-semibold'>
+                  🔔 Novidades — {data.novidades.length} processo(s) com nova movimentação
+                </Typography>
+                <Typography variant='body2' color='text.secondary' className='-mt-2'>
+                  Movimentações novas detectadas pelo DataJud. Revise e marque como visto.
+                </Typography>
+
+                {data.novidades.map(processo => (
+                  <div key={processo.id} className='rounded border p-3 flex flex-col gap-2'>
+                    <div className='flex items-start justify-between gap-3 flex-wrap'>
+                      <div>
+                        <Typography className='font-semibold'>
+                          {processo.cliente || processo.lead?.autor || processo.numeroProcesso}
+                        </Typography>
+                        <Typography variant='caption' color='text.secondary'>
+                          {processo.tribunal || '-'} · {processo.numeroProcesso}
+                        </Typography>
+                      </div>
+                      <MarcarVistoButton processoId={processo.id} />
+                    </div>
+                    <div className='flex flex-col gap-1'>
+                      {processo.movimentacoes.map(mov => (
+                        <div key={mov.id} className='flex items-start gap-2'>
+                          <Chip size='small' color='success' variant='tonal' label='novo' />
+                          <Typography variant='body2'>
+                            <span className='font-medium'>{formatDate(mov.dataMovimento)}</span> — {mov.descricao}
+                          </Typography>
+                        </div>
+                      ))}
+                      {!processo.movimentacoes.length && (
+                        <Typography variant='body2' color='text.secondary'>
+                          {processo.ultimaMovimentacaoTexto || 'Movimentação registrada'}
+                        </Typography>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
 
         <Grid size={{ xs: 12 }}>
           <Card>

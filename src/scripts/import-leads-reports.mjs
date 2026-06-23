@@ -21,6 +21,25 @@ const XLSX = require('xlsx')
 
 const prisma = new PrismaClient()
 
+const sleep = ms => new Promise(r => setTimeout(r, ms))
+
+// Neon (serverless) às vezes derruba a conexão sob carga — tenta de novo.
+async function withRetry(fn, tries = 4) {
+  let lastErr
+
+  for (let i = 0; i < tries; i++) {
+    try {
+      return await fn()
+    } catch (e) {
+      lastErr = e
+      if (!/reach database|Closed|ECONNRESET|terminating|timeout/i.test(e.message)) throw e
+      await sleep(800 * (i + 1))
+    }
+  }
+
+  throw lastErr
+}
+
 const REPORTS_DIR = 'C:\\Users\\ppped\\l4-leads-judiciais\\reports'
 
 // Set curado de entregas recentes e higienizadas (melhor qualidade de contato).
@@ -29,6 +48,19 @@ const CURATED = [
   { file: 'ENTREGA_Despejo_TJGO_HIGIENIZADOS_209.xlsx', grupo: 'DESPEJO_TJGO', tipo: 'DESPEJO', abordagem: 'DEFESA_DESPEJO' },
   { file: 'ENTREGA_TRF1_ExecFiscal_2026-05-05_HIGIENIZADA.xlsx', grupo: 'EXEC_FISCAL_TRF1', tipo: 'EXECUCAO_FISCAL', abordagem: 'DEFESA_TRIBUTARIA' }
 ]
+
+// Infere grupo/tipo/abordagem a partir do nome do arquivo de entrega.
+function inferMeta(filename) {
+  const f = filename.toLowerCase()
+
+  if (f.includes('rpv')) return { grupo: 'RPV_TJGO', tipo: 'RPV', abordagem: 'RPV_CREDOR' }
+  if (f.includes('precatori')) return { grupo: 'PRECATORIO', tipo: 'PRECATORIO', abordagem: 'PRECATORIO_CREDOR' }
+  if (f.includes('despejo')) return { grupo: 'DESPEJO_TJGO', tipo: 'DESPEJO', abordagem: 'DEFESA_DESPEJO' }
+  if (f.includes('fiscal') || f.includes('tributar'))
+    return { grupo: 'EXEC_FISCAL', tipo: 'EXECUCAO_FISCAL', abordagem: 'DEFESA_TRIBUTARIA' }
+
+  return { grupo: 'OUTROS', tipo: 'LEAD', abordagem: null }
+}
 
 const CNJ_SEGMENT = {
   '8.26': 'TJSP', '8.07': 'TJDFT', '8.09': 'TJGO', '8.16': 'TJPR', '8.13': 'TJMG',
@@ -216,30 +248,36 @@ async function importFile({ file, grupo, tipo, abordagem }) {
       detalhes: responsavel ? `Responsável/Sócio: ${responsavel}` : null
     }
 
-    const existing = await prisma.lead.findUnique({ where: { numeroProcesso }, select: { id: true } })
+    const existing = await withRetry(() =>
+      prisma.lead.findUnique({ where: { numeroProcesso }, select: { id: true } })
+    )
 
-    const lead = await prisma.lead.upsert({
-      where: { numeroProcesso },
-      update: data,
-      create: { numeroProcesso, pipeline: 'PROSPECCAO', statusCrm: 'NOVO', ...data }
-    })
+    const lead = await withRetry(() =>
+      prisma.lead.upsert({
+        where: { numeroProcesso },
+        update: data,
+        create: { numeroProcesso, pipeline: 'PROSPECCAO', statusCrm: 'NOVO', ...data }
+      })
+    )
 
     existing ? updated++ : created++
 
     // Alimenta o Acompanhamento Processual
-    await prisma.processoMonitorado.upsert({
-      where: { numeroProcesso },
-      update: { tribunal, cliente: autor || reu, leadId: lead.id, origemArquivo: lote },
-      create: {
-        numeroProcesso,
-        tribunal,
-        cliente: autor || reu,
-        leadId: lead.id,
-        origemArquivo: lote,
-        status: 'ATIVO',
-        statusConsulta: 'PENDENTE'
-      }
-    })
+    await withRetry(() =>
+      prisma.processoMonitorado.upsert({
+        where: { numeroProcesso },
+        update: { tribunal, cliente: autor || reu, leadId: lead.id, origemArquivo: lote },
+        create: {
+          numeroProcesso,
+          tribunal,
+          cliente: autor || reu,
+          leadId: lead.id,
+          origemArquivo: lote,
+          status: 'ATIVO',
+          statusConsulta: 'PENDENTE'
+        }
+      })
+    )
   }
 
   console.log(`   ✅ criados ${created} | 🔄 atualizados ${updated} | ⏭️  ignorados ${skipped}`)
@@ -249,10 +287,21 @@ async function importFile({ file, grupo, tipo, abordagem }) {
 
 async function main() {
   const argv = process.argv.slice(2)
-  const jobs =
-    argv.length >= 1
-      ? [{ file: argv[0], grupo: argv[1] || 'IMPORT', tipo: argv[2] || 'LEAD', abordagem: argv[3] || null }]
-      : CURATED
+
+  let jobs
+
+  if (argv[0] === 'all') {
+    // Importa TODAS as entregas .xlsx da pasta reports, inferindo o segmento pelo nome.
+    jobs = fs
+      .readdirSync(REPORTS_DIR)
+      .filter(f => /^ENTREGA_.*\.xlsx$/i.test(f) && !f.startsWith('~$'))
+      .map(file => ({ file, ...inferMeta(file) }))
+    console.log(`📦 Modo "all": ${jobs.length} arquivos`)
+  } else if (argv.length >= 1) {
+    jobs = [{ file: argv[0], grupo: argv[1] || 'IMPORT', tipo: argv[2] || 'LEAD', abordagem: argv[3] || null }]
+  } else {
+    jobs = CURATED
+  }
 
   const totals = { created: 0, updated: 0, skipped: 0 }
 

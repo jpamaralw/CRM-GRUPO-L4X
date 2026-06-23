@@ -40,6 +40,8 @@ export async function GET(request) {
       telefone: true,
       email: true,
       origem: true,
+      grupo: true,
+      fonte: true,
       lastContactAt: true,
       nextFollowUpAt: true,
       updatedAt: true,
