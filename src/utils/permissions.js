@@ -51,14 +51,15 @@ export const PIPELINES = {
 
 // Segmentos de ativo (linha de negócio). L4 Ativos = precatórios/RPV/despejo; L4 Taxx = tributário.
 export const SEGMENTOS = [
-  { key: 'PRECATORIO', label: 'Precatório', linha: 'L4 Ativos', color: 'primary' },
-  { key: 'RPV', label: 'RPV', linha: 'L4 Ativos', color: 'info' },
-  { key: 'TRIBUTARIO', label: 'Tributário', linha: 'L4 Taxx', color: 'warning' },
-  { key: 'DESPEJO', label: 'Despejo', linha: 'L4 Ativos', color: 'success' },
-  { key: 'OUTROS', label: 'Outros', linha: '—', color: 'default' }
+  { key: 'PRECATORIO', label: 'Precatório', icon: 'ri-scales-line', linha: 'L4 Ativos', color: 'primary' },
+  { key: 'RPV', label: 'RPV', icon: 'ri-bank-card-line', linha: 'L4 Ativos', color: 'info' },
+  { key: 'TRIBUTARIO', label: 'Tributário', icon: 'ri-building-2-line', linha: 'L4 Taxx', color: 'warning' },
+  { key: 'DESPEJO', label: 'Despejo', icon: 'ri-home-2-line', linha: 'L4 Ativos', color: 'success' },
+  { key: 'OUTROS', label: 'Outros', icon: 'ri-inbox-line', linha: '—', color: 'default' }
 ]
 
 export const SEGMENTO_LABEL = SEGMENTOS.reduce((acc, s) => ({ ...acc, [s.key]: s.label }), {})
+export const SEGMENTO_ICON = SEGMENTOS.reduce((acc, s) => ({ ...acc, [s.key]: s.icon }), {})
 
 export function segmentoFromLead(lead) {
   const g = `${lead?.segmento || lead?.grupo || lead?.fonte || ''}`.toUpperCase()
@@ -209,6 +210,13 @@ export function getVisibleNavItems(role) {
       icon: 'ri-robot-line',
       href: '/automacoes',
       roles: [ROLES.GESTOR, ROLES.SOCIO, ROLES.TI]
+    },
+    {
+      key: 'onboarding',
+      label: 'Guia',
+      icon: 'ri-book-open-line',
+      href: '/onboarding',
+      roles: 'ALL'
     },
     {
       key: 'configuracoes',

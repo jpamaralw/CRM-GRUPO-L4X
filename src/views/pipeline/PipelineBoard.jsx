@@ -12,6 +12,10 @@ import TextField from '@mui/material/TextField'
 import InputAdornment from '@mui/material/InputAdornment'
 import Chip from '@mui/material/Chip'
 
+import Select from '@mui/material/Select'
+import MenuItem from '@mui/material/MenuItem'
+import FormControl from '@mui/material/FormControl'
+import InputLabel from '@mui/material/InputLabel'
 import { toast } from 'react-toastify'
 
 import PipelineColumn from './PipelineColumn'
@@ -27,6 +31,9 @@ const PipelineBoard = ({ pipelines, activePipeline, leads, lang }) => {
   const [newLeadOpen, setNewLeadOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [segmento, setSegmento] = useState('TODOS')
+  const [prioridade, setPrioridade] = useState('TODAS')
+  const [responsavel, setResponsavel] = useState('TODOS')
+  const [valorMin, setValorMin] = useState('')
 
   const pipelineDef = pipelines.find(pipeline => pipeline.key === activePipeline)
 
@@ -45,11 +52,27 @@ const PipelineBoard = ({ pipelines, activePipeline, leads, lang }) => {
       .sort((a, b) => b.count - a.count)
   }, [leadsState])
 
+  // Extrair usuários únicos para filtro responsável
+  const usuariosDisponiveis = useMemo(() => {
+    const users = new Map()
+
+    leadsState.forEach(lead => {
+      if (lead.assignedTo) {
+        users.set(lead.assignedTo.id, lead.assignedTo)
+      }
+    })
+
+    return Array.from(users.values()).sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email))
+  }, [leadsState])
+
   const visibleLeads = useMemo(() => {
     const term = search.trim().toLowerCase()
 
     return leadsState.filter(lead => {
       if (segmento !== 'TODOS' && segmentoFromLead(lead) !== segmento) return false
+      if (prioridade !== 'TODAS' && lead.prioridade !== prioridade) return false
+      if (responsavel !== 'TODOS' && lead.assignedTo?.id !== responsavel) return false
+      if (valorMin && (lead.valorCausa || 0) < Number(valorMin)) return false
 
       if (!term) return true
 
@@ -57,7 +80,7 @@ const PipelineBoard = ({ pipelines, activePipeline, leads, lang }) => {
         .filter(Boolean)
         .some(field => field.toLowerCase().includes(term))
     })
-  }, [leadsState, search, segmento])
+  }, [leadsState, search, segmento, prioridade, responsavel, valorMin])
 
   const columns = useMemo(() => {
     const grouped = {}
@@ -143,22 +166,78 @@ const PipelineBoard = ({ pipelines, activePipeline, leads, lang }) => {
         </Tabs>
       )}
 
-      <TextField
-        size='small'
-        placeholder='Buscar por processo, autor, réu, telefone ou e-mail...'
-        value={search}
-        onChange={event => setSearch(event.target.value)}
-        className='max-w-[28rem]'
-        slotProps={{
-          input: {
-            startAdornment: (
-              <InputAdornment position='start'>
-                <i className='ri-search-line' />
-              </InputAdornment>
-            )
-          }
-        }}
-      />
+      <div className='flex gap-3 flex-wrap items-end'>
+        <TextField
+          size='small'
+          placeholder='Buscar por processo, autor, réu, telefone ou e-mail...'
+          value={search}
+          onChange={event => setSearch(event.target.value)}
+          className='flex-1 min-w-[240px]'
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position='start'>
+                  <i className='ri-search-line' />
+                </InputAdornment>
+              )
+            }
+          }}
+        />
+
+        <FormControl size='small' className='min-w-[140px]'>
+          <InputLabel id='priority-label'>Prioridade</InputLabel>
+          <Select labelId='priority-label' label='Prioridade' value={prioridade} onChange={e => setPrioridade(e.target.value)}>
+            <MenuItem value='TODAS'>Todas</MenuItem>
+            <MenuItem value='ALTA'>Alta</MenuItem>
+            <MenuItem value='MEDIA'>Média</MenuItem>
+            <MenuItem value='BAIXA'>Baixa</MenuItem>
+          </Select>
+        </FormControl>
+
+        {usuariosDisponiveis.length > 0 && (
+          <FormControl size='small' className='min-w-[140px]'>
+            <InputLabel id='assignee-label'>Responsável</InputLabel>
+            <Select labelId='assignee-label' label='Responsável' value={responsavel} onChange={e => setResponsavel(e.target.value)}>
+              <MenuItem value='TODOS'>Todos</MenuItem>
+              {usuariosDisponiveis.map(user => (
+                <MenuItem key={user.id} value={user.id}>
+                  {user.name || user.email}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
+
+        <TextField
+          size='small'
+          type='number'
+          placeholder='Valor mín. (R$)'
+          value={valorMin}
+          onChange={e => setValorMin(e.target.value)}
+          className='min-w-[120px]'
+          slotProps={{
+            input: {
+              startAdornment: <InputAdornment position='start'>R$</InputAdornment>
+            }
+          }}
+        />
+
+        {(search || segmento !== 'TODOS' || prioridade !== 'TODAS' || responsavel !== 'TODOS' || valorMin) && (
+          <Button
+            size='small'
+            variant='text'
+            onClick={() => {
+              setSearch('')
+              setSegmento('TODOS')
+              setPrioridade('TODAS')
+              setResponsavel('TODOS')
+              setValorMin('')
+            }}
+          >
+            Limpar filtros
+          </Button>
+        )}
+      </div>
 
       {segmentosDisponiveis.length > 1 && (
         <div className='flex items-center gap-2 flex-wrap'>

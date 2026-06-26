@@ -7,7 +7,7 @@ import Chip from '@mui/material/Chip'
 import Avatar from '@mui/material/Avatar'
 import Tooltip from '@mui/material/Tooltip'
 
-import { segmentoFromLead, SEGMENTO_LABEL, SEGMENTOS } from '@/utils/permissions'
+import { segmentoFromLead, SEGMENTO_LABEL, SEGMENTO_ICON, SEGMENTOS } from '@/utils/permissions'
 
 const PRIORIDADE_COLOR = {
   ALTA: 'error',
@@ -91,6 +91,7 @@ const LeadCard = ({ lead, onClick }) => {
             size='small'
             variant='tonal'
             color={SEGMENTO_COLOR[segmento] || 'default'}
+            icon={<i className={SEGMENTO_ICON[segmento] || 'ri-inbox-line'} />}
             label={SEGMENTO_LABEL[segmento] || 'Outros'}
           />
           {lead.tribunal && <Chip size='small' variant='outlined' label={lead.tribunal} />}

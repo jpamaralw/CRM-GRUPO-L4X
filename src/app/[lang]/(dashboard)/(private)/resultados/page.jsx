@@ -32,12 +32,18 @@ export default async function ResultadosPage(props) {
 
   const where = getLeadVisibilityWhere(user.role)
 
-  const [porPipeline, porStatus, porResp, fechados, perdidos] = await Promise.all([
+  const [porPipeline, porStatus, porResp, fechados, perdidos, porRespFechado] = await Promise.all([
     prisma.lead.groupBy({ by: ['pipeline'], where, _count: { _all: true } }),
     prisma.lead.groupBy({ by: ['statusCrm'], where, _count: { _all: true } }),
     prisma.lead.groupBy({ by: ['assignedToId'], where: { ...where, assignedToId: { not: null } }, _count: { _all: true } }),
     prisma.lead.count({ where: { ...where, statusCrm: 'FECHADO' } }),
-    prisma.lead.count({ where: { ...where, statusCrm: 'PERDIDO' } })
+    prisma.lead.count({ where: { ...where, statusCrm: 'PERDIDO' } }),
+    prisma.lead.groupBy({
+      by: ['assignedToId'],
+      where: { ...where, assignedToId: { not: null }, statusCrm: 'FECHADO' },
+      _count: { _all: true },
+      _sum: { valorCausa: true }
+    })
   ])
 
   const usuarios = await prisma.user.findMany({
@@ -111,29 +117,45 @@ export default async function ResultadosPage(props) {
 
         <Grid size={{ xs: 12, md: 6 }}>
           <Card className='bs-full'>
-            <CardHeader title='Carteira por responsável' />
+            <CardHeader title='Performance por responsável' />
             <CardContent>
               <Table size='small'>
                 <TableHead>
                   <TableRow>
                     <TableCell>Responsável</TableCell>
-                    <TableCell align='right'>Leads</TableCell>
+                    <TableCell align='right'>Carteira</TableCell>
+                    <TableCell align='right'>Fechados</TableCell>
+                    <TableCell align='right'>Taxa</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {porResp
                     .sort((a, b) => b._count._all - a._count._all)
-                    .map(r => (
-                      <TableRow key={r.assignedToId}>
-                        <TableCell>{userMap[r.assignedToId] || '—'}</TableCell>
-                        <TableCell align='right' className='font-medium'>
-                          {fmt(r._count._all)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    .map(r => {
+                      const fechado = porRespFechado.find(f => f.assignedToId === r.assignedToId)
+                      const taxa = r._count._all > 0 ? Math.round(((fechado?._count._all || 0) / r._count._all) * 100) : 0
+
+                      return (
+                        <TableRow key={r.assignedToId}>
+                          <TableCell>{userMap[r.assignedToId] || '—'}</TableCell>
+                          <TableCell align='right'>{fmt(r._count._all)}</TableCell>
+                          <TableCell align='right' className='font-medium'>
+                            {fmt(fechado?._count._all || 0)}
+                          </TableCell>
+                          <TableCell align='right'>
+                            <Chip
+                              size='small'
+                              label={`${taxa}%`}
+                              color={taxa >= 30 ? 'success' : taxa >= 15 ? 'warning' : 'default'}
+                              variant='tonal'
+                            />
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
                   {!porResp.length && (
                     <TableRow>
-                      <TableCell colSpan={2} align='center'>
+                      <TableCell colSpan={4} align='center'>
                         <Chip size='small' label='Nenhum lead atribuído ainda' variant='outlined' />
                       </TableCell>
                     </TableRow>
