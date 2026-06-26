@@ -1,7 +1,10 @@
 import crypto from 'crypto'
+import { createRequire } from 'module'
 
 import { PrismaClient } from '@prisma/client'
-import * as XLSX from 'xlsx'
+
+const require = createRequire(import.meta.url)
+const XLSX = require('xlsx')
 
 const prisma = new PrismaClient()
 
@@ -248,7 +251,22 @@ async function main() {
     let skipped = 0
 
     for (const row of rows) {
-      const result = await upsertProcesso({ ...row, origemAba: sheetName })
+      let result
+      let attempt = 0
+
+      // Retry com backoff para quedas transientes do Neon (P1017)
+      while (true) {
+        try {
+          result = await upsertProcesso({ ...row, origemAba: sheetName })
+          break
+        } catch (err) {
+          attempt++
+
+          if (attempt > 5) throw err
+          await new Promise(r => setTimeout(r, 500 * attempt))
+          await prisma.$connect().catch(() => {})
+        }
+      }
 
       if (result === 'created') created++
       else if (result === 'updated') updated++

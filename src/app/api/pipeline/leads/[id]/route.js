@@ -135,6 +135,13 @@ export async function PATCH(request, { params }) {
     activityNotes.push('Contato registrado')
   }
 
+  // SDR/closer envia o ativo para análise de compliance dos Drs (ou cancela o envio).
+  // A aprovação/reprovação em si é feita pelos Drs em /api/compliance.
+  if (body.complianceStatus !== undefined && ['AGUARDANDO', 'NAO_AVALIADO'].includes(body.complianceStatus)) {
+    data.complianceStatus = body.complianceStatus
+    activityNotes.push(body.complianceStatus === 'AGUARDANDO' ? 'Enviado para compliance' : 'Removido do compliance')
+  }
+
   if (Object.keys(data).length === 0) {
     return NextResponse.json({ lead })
   }

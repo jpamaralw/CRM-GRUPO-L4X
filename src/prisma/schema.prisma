@@ -86,6 +86,11 @@ model Lead {
   abordagemTipo    String?
   lastContactAt    DateTime?
   nextFollowUpAt   DateTime?
+  // Compliance dos Drs (aprovação/reprovação de compra do ativo)
+  complianceStatus String   @default("NAO_AVALIADO") // NAO_AVALIADO | AGUARDANDO | APROVADO | REPROVADO
+  complianceObs    String?
+  complianceById   String?
+  complianceAt     DateTime?
   linkProcesso     String?
   loteEntrega      String?
   grupo            String?

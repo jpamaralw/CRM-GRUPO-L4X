@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/acompanhamento/consultar?limit=80",
+      "path": "/api/acompanhamento/consultar?limit=150&digest=1",
       "schedule": "0 9 * * *"
     }
   ]

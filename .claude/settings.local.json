@@ -31,7 +31,9 @@
       "Bash(node *)",
       "Bash(curl -s \"http://localhost:3001/en/login\")",
       "Bash(grep -qE \"Compiled successfully|Failed to compile|Error:|✓ Generating static|error -|Type error\" \"C:/Users/ppped/AppData/Local/Temp/claude/C--Users-ppped-CRM-GRUPO-L4X/cee54431-8d4f-4056-b899-baa2baee0171/tasks/bg05nbci4.output\")",
-      "Bash(break)"
+      "Bash(break)",
+      "Read(//c/Users/ppped/l4-leads-judiciais/**)",
+      "Bash(python -c ' *)"
     ]
   }
 }

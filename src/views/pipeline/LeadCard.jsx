@@ -7,7 +7,7 @@ import Chip from '@mui/material/Chip'
 import Avatar from '@mui/material/Avatar'
 import Tooltip from '@mui/material/Tooltip'
 
-import { segmentoFromLead, SEGMENTO_LABEL, SEGMENTO_ICON, SEGMENTOS } from '@/utils/permissions'
+import { segmentoFromLead, SEGMENTO_LABEL, SEGMENTO_ICON, SEGMENTOS, COMPLIANCE_STATUS } from '@/utils/permissions'
 
 const PRIORIDADE_COLOR = {
   ALTA: 'error',
@@ -95,6 +95,14 @@ const LeadCard = ({ lead, onClick }) => {
             label={SEGMENTO_LABEL[segmento] || 'Outros'}
           />
           {lead.tribunal && <Chip size='small' variant='outlined' label={lead.tribunal} />}
+          {lead.complianceStatus && lead.complianceStatus !== 'NAO_AVALIADO' && (
+            <Tooltip title={COMPLIANCE_STATUS[lead.complianceStatus]?.label || 'Compliance'}>
+              <i
+                className={`${COMPLIANCE_STATUS[lead.complianceStatus]?.icon} text-[15px]`}
+                style={{ color: `var(--mui-palette-${COMPLIANCE_STATUS[lead.complianceStatus]?.color}-main)` }}
+              />
+            </Tooltip>
+          )}
           {valor && (
             <Typography variant='caption' className='font-semibold' color='success.main'>
               {valor}

@@ -155,6 +155,18 @@ export function canAccessSettings(role) {
   return [ROLES.TI, ROLES.SOCIO].includes(role)
 }
 
+// Compliance: os Drs (ADVOGADO) aprovam/reprovam a compra do ativo; gestores/TI também podem.
+export function canDoCompliance(role) {
+  return [ROLES.ADVOGADO, ROLES.GESTOR, ROLES.SOCIO, ROLES.TI].includes(role)
+}
+
+export const COMPLIANCE_STATUS = {
+  NAO_AVALIADO: { label: 'Não avaliado', color: 'default', icon: 'ri-circle-line' },
+  AGUARDANDO: { label: 'Aguardando compliance', color: 'warning', icon: 'ri-time-line' },
+  APROVADO: { label: 'Aprovado', color: 'success', icon: 'ri-checkbox-circle-line' },
+  REPROVADO: { label: 'Reprovado', color: 'error', icon: 'ri-close-circle-line' }
+}
+
 export function getVisiblePipelines(role) {
   return Object.keys(PIPELINES).filter(pipeline => canViewPipeline(role, pipeline))
 }
@@ -191,6 +203,13 @@ export function getVisibleNavItems(role) {
       roles: ATENDIMENTO_ROLES
     },
     {
+      key: 'compliance',
+      label: 'Compliance',
+      icon: 'ri-shield-check-line',
+      href: '/compliance',
+      roles: [ROLES.ADVOGADO, ROLES.GESTOR, ROLES.SOCIO, ROLES.TI]
+    },
+    {
       key: 'resultados',
       label: 'Resultados',
       icon: 'ri-bar-chart-grouped-line',
@@ -209,6 +228,13 @@ export function getVisibleNavItems(role) {
       label: 'Automacoes',
       icon: 'ri-robot-line',
       href: '/automacoes',
+      roles: [ROLES.GESTOR, ROLES.SOCIO, ROLES.TI]
+    },
+    {
+      key: 'importar',
+      label: 'Importar Leads',
+      icon: 'ri-upload-cloud-2-line',
+      href: '/importar',
       roles: [ROLES.GESTOR, ROLES.SOCIO, ROLES.TI]
     },
     {

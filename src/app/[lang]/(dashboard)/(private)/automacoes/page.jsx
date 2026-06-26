@@ -23,6 +23,8 @@ export default async function AutomacoesPage(props) {
 
   const ultimaConsulta = await prisma.consultaProcessualRun.findFirst({ orderBy: { startedAt: 'desc' } })
 
+  const emailAtivo = Boolean(process.env.RESEND_API_KEY)
+
   const rotinas = [
     {
       nome: 'Acompanhamento processual (DataJud)',
@@ -33,6 +35,24 @@ export default async function AutomacoesPage(props) {
       detalhe: `Última execução: ${formatDate(ultimaConsulta?.startedAt)}${
         ultimaConsulta ? ` · ${ultimaConsulta.novasMovimentacoes ?? 0} novas movimentações` : ''
       }`
+    },
+    {
+      nome: 'Relatório diário por e-mail aos Drs',
+      descricao:
+        'Após a consulta diária, um relatório com as novas movimentações é enviado automaticamente para os Drs (Fábio/Natane), com gestores em cópia.',
+      icon: 'ri-mail-send-line',
+      color: 'info',
+      status: emailAtivo ? 'Ativa' : 'Aguardando chave',
+      detalhe: emailAtivo ? 'Enviado junto da consulta diária (09:00)' : 'Configure RESEND_API_KEY para ativar o envio'
+    },
+    {
+      nome: 'Compliance de ativos',
+      descricao:
+        'Ativos caçados por SDRs/closers vão para análise dos Drs, que aprovam ou reprovam a compra. Tudo fica registrado no histórico do lead.',
+      icon: 'ri-shield-check-line',
+      color: 'secondary',
+      status: 'Ativa',
+      detalhe: 'Fluxo: enviar → aprovar/reprovar → registro'
     },
     {
       nome: 'Lembrete de follow-up',
@@ -70,7 +90,7 @@ export default async function AutomacoesPage(props) {
                   <Avatar variant='rounded' className={`bg-${r.color}`} sx={{ bgcolor: `var(--mui-palette-${r.color}-main)` }}>
                     <i className={r.icon} />
                   </Avatar>
-                  <Chip size='small' label={r.status} color='success' variant='tonal' />
+                  <Chip size='small' label={r.status} color={r.status === 'Ativa' ? 'success' : 'warning'} variant='tonal' />
                 </div>
                 <Typography variant='h6'>{r.nome}</Typography>
                 <Typography variant='body2' color='text.secondary'>

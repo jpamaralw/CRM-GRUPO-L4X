@@ -47,6 +47,7 @@ export default async function PipelinePage(props) {
       grupo: true,
       fonte: true,
       nextFollowUpAt: true,
+      complianceStatus: true,
       updatedAt: true,
       assignedTo: { select: { id: true, name: true, email: true } }
     },

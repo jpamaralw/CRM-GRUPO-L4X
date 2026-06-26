@@ -4,6 +4,8 @@ import prisma from '@/libs/prisma'
 import { consultarProcesso } from '@/libs/datajud'
 import { getCurrentUser } from '@/libs/serverAuth'
 import { canViewAcompanhamento } from '@/utils/permissions'
+import { sendEmail } from '@/libs/email'
+import { buildDigestHtml, resolveDigestRecipients } from '@/libs/acompanhamentoDigest'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300
@@ -33,7 +35,10 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url)
   const limit = Math.min(Math.max(Number(searchParams.get('limit')) || 50, 1), 200)
 
-  return runConsulta(limit)
+  // Envia o relatório por e-mail aos Drs quando rodando via cron ou com ?digest=1
+  const sendDigest = auth.via === 'cron' || searchParams.get('digest') === '1'
+
+  return runConsulta(limit, { sendDigest })
 }
 
 export async function POST(request) {
@@ -42,19 +47,21 @@ export async function POST(request) {
   if (!auth.ok) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   let limit = 50
+  let sendDigest = auth.via === 'cron'
 
   try {
     const body = await request.json().catch(() => ({}))
 
     if (body?.limit) limit = Math.min(Math.max(Number(body.limit) || 50, 1), 200)
+    if (body?.digest) sendDigest = true
   } catch {
     /* sem body */
   }
 
-  return runConsulta(limit)
+  return runConsulta(limit, { sendDigest })
 }
 
-async function runConsulta(limit) {
+async function runConsulta(limit, { sendDigest = false } = {}) {
   const processos = await prisma.processoMonitorado.findMany({
     where: { status: 'ATIVO' },
     orderBy: [{ ultimaConsultaAt: { sort: 'asc', nulls: 'first' } }],
@@ -69,6 +76,7 @@ async function runConsulta(limit) {
   let novasMovimentacoes = 0
   let erros = 0
   const detalhes = []
+  const novidades = []
 
   for (const processo of processos) {
     const resultado = await consultarProcesso({
@@ -121,6 +129,19 @@ async function runConsulta(limit) {
     const jaConsultado = !!processo.ultimaConsultaAt
     const temNovidadeReal = jaConsultado && novas.length > 0
 
+    // Coleta novidades reais para o relatório por e-mail
+    if (temNovidadeReal) {
+      novas.forEach(m =>
+        novidades.push({
+          numeroProcesso: processo.numeroProcesso,
+          cliente: processo.cliente,
+          tribunal: processo.tribunal,
+          descricao: m.nome || 'Movimentação',
+          dataMovimento: m.dataHora || null
+        })
+      )
+    }
+
     await prisma.processoMonitorado.update({
       where: { id: processo.id },
       data: {
@@ -146,12 +167,42 @@ async function runConsulta(limit) {
     }
   })
 
+  // Relatório diário por e-mail aos Drs (Fábio/Natane) + gestores em cópia
+  let emailResult = null
+
+  if (sendDigest) {
+    try {
+      const { to, cc } = await resolveDigestRecipients()
+
+      if (to.length) {
+        const totalMonitorados = await prisma.processoMonitorado.count({ where: { status: 'ATIVO' } })
+
+        const html = buildDigestHtml({
+          run: { ...finalizado, totalProcessos: totalMonitorados },
+          novidades
+        })
+
+        emailResult = await sendEmail({
+          to,
+          cc,
+          subject: `Acompanhamento Processual L4 — ${novidades.length} novidade(s) · ${new Date().toLocaleDateString('pt-BR')}`,
+          html
+        })
+      } else {
+        emailResult = { ok: false, error: 'Sem destinatários (cadastre Drs/advogados ou EMAIL_ACOMPANHAMENTO)' }
+      }
+    } catch (err) {
+      emailResult = { ok: false, error: err.message }
+    }
+  }
+
   return NextResponse.json({
     ok: true,
     runId: finalizado.id,
     totalProcessos: processos.length,
     consultados,
     novasMovimentacoes,
-    erros
+    erros,
+    email: emailResult
   })
 }

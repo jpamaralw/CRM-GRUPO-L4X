@@ -18,7 +18,7 @@ import Button from '@mui/material/Button'
 
 import { toast } from 'react-toastify'
 
-import { PIPELINES } from '@/utils/permissions'
+import { PIPELINES, COMPLIANCE_STATUS } from '@/utils/permissions'
 
 const ALL_STATUSES = Object.values(PIPELINES)
   .flatMap(pipeline => pipeline.statuses)
@@ -261,6 +261,42 @@ const LeadDrawer = ({ leadId, onClose, onUpdated }) => {
               ))}
             </Select>
           </FormControl>
+
+          <div className='flex flex-col gap-2 p-3 rounded-lg bg-actionHover'>
+            <div className='flex items-center justify-between gap-2'>
+              <Typography variant='subtitle2'>Compliance (Drs)</Typography>
+              <Chip
+                size='small'
+                variant='tonal'
+                color={COMPLIANCE_STATUS[lead.complianceStatus]?.color || 'default'}
+                icon={<i className={COMPLIANCE_STATUS[lead.complianceStatus]?.icon || 'ri-circle-line'} />}
+                label={COMPLIANCE_STATUS[lead.complianceStatus]?.label || 'Não avaliado'}
+              />
+            </div>
+            {lead.complianceObs && (
+              <Typography variant='caption' color='text.secondary'>
+                Parecer: {lead.complianceObs}
+              </Typography>
+            )}
+            {['NAO_AVALIADO', 'REPROVADO'].includes(lead.complianceStatus) && (
+              <Button
+                size='small'
+                variant='outlined'
+                color='warning'
+                className='self-start'
+                disabled={updating}
+                startIcon={<i className='ri-shield-check-line' />}
+                onClick={() => quickPatch({ complianceStatus: 'AGUARDANDO' }, 'Enviado para compliance')}
+              >
+                Enviar para compliance
+              </Button>
+            )}
+            {lead.complianceStatus === 'AGUARDANDO' && (
+              <Typography variant='caption' color='warning.main'>
+                Aguardando análise jurídica dos Drs (Fábio / Natane).
+              </Typography>
+            )}
+          </div>
 
           <div className='flex flex-col gap-2'>
             <Typography variant='subtitle2'>Partes</Typography>
