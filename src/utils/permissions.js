@@ -219,6 +219,20 @@ export function getVisibleNavItems(role) {
       roles: 'ALL'
     },
     {
+      key: 'templates',
+      label: 'Templates',
+      icon: 'ri-file-text-line',
+      href: '/templates',
+      roles: [ROLES.SDR, ROLES.CLOSER, ROLES.FINANCEIRO_SDR]
+    },
+    {
+      key: 'relatorios',
+      label: 'Relatórios',
+      icon: 'ri-bar-chart-2-line',
+      href: '/relatorios',
+      roles: [ROLES.SDR, ROLES.CLOSER, ROLES.GESTOR, ROLES.SOCIO]
+    },
+    {
       key: 'configuracoes',
       label: 'Configuracoes',
       icon: 'ri-settings-3-line',
