@@ -57,7 +57,7 @@ const DashboardCRM = async props => {
         className='relative overflow-hidden rounded-2xl p-6 sm:p-8'
         style={{
           background:
-            'radial-gradient(900px 400px at 90% -30%, #0a5bc4 0%, transparent 55%), linear-gradient(120deg, #002a66 0%, #004499 60%, #00367d 100%)'
+            'radial-gradient(900px 400px at 90% -30%, #0a57c2 0%, transparent 55%), linear-gradient(120deg, #00224f 0%, #003C96 60%, #002a6b 100%)'
         }}
       >
         <div

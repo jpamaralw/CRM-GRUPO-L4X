@@ -67,7 +67,7 @@ export function buildDigestHtml({ run, novidades = [] }) {
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;background:#eef2f8;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;">
   <div style="max-width:720px;margin:0 auto;padding:24px 16px;">
-    <div style="background:linear-gradient(135deg,#002a66 0%,#004499 60%,#00367d 100%);border-radius:16px 16px 0 0;padding:28px 28px 22px;">
+    <div style="background:linear-gradient(135deg,#00224f 0%,#003C96 60%,#002a6b 100%);border-radius:16px 16px 0 0;padding:28px 28px 22px;">
       <div style="color:#9cc3ff;font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;">L4 Ativos · Acompanhamento Processual</div>
       <div style="color:#fff;font-size:22px;font-weight:800;margin-top:6px;">Relatório diário — DataJud / CNJ</div>
       <div style="color:rgba(255,255,255,.8);font-size:13px;margin-top:4px;text-transform:capitalize;">${dataHoje}</div>
@@ -75,7 +75,7 @@ export function buildDigestHtml({ run, novidades = [] }) {
 
     <div style="background:#fff;padding:8px 16px;display:flex;gap:8px;flex-wrap:wrap;border-left:1px solid #e6ebf4;border-right:1px solid #e6ebf4;">
       <div style="flex:1;min-width:120px;padding:14px;text-align:center;">
-        <div style="font-size:24px;font-weight:800;color:#004499;">${total}</div>
+        <div style="font-size:24px;font-weight:800;color:#003C96;">${total}</div>
         <div style="font-size:11px;color:#5b6b85;text-transform:uppercase;letter-spacing:.4px;">Monitorados</div>
       </div>
       <div style="flex:1;min-width:120px;padding:14px;text-align:center;">

@@ -3,7 +3,7 @@ const primaryColorConfig = [
   {
     name: 'l4-blue',
     light: '#3366AD',
-    main: '#004499',
+    main: '#003C96',
     dark: '#00306B'
   },
   {

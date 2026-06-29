@@ -33,8 +33,8 @@ const schema = object({
 
 const TRUST = [
   { icon: 'ri-shield-check-line', label: 'Desde 2018 no mercado' },
-  { icon: 'ri-exchange-funds-line', label: '+11 mil antecipações realizadas' },
-  { icon: 'ri-bank-line', label: '+R$ 3 bilhões em processos geridos' }
+  { icon: 'ri-scales-3-line', label: 'Mil+ precatórios negociados' },
+  { icon: 'ri-briefcase-4-line', label: 'Mil+ ativos judiciais geridos' }
 ]
 
 const Login = () => {
@@ -88,7 +88,7 @@ const Login = () => {
         className='relative flex-1 flex-col justify-between p-12 max-md:hidden md:flex overflow-hidden'
         style={{
           background:
-            'radial-gradient(1200px 600px at 20% -10%, #0a5bc4 0%, transparent 60%), linear-gradient(135deg, #002a66 0%, #004499 55%, #00367d 100%)'
+            'radial-gradient(1100px 560px at 18% -10%, #0a57c2 0%, transparent 58%), linear-gradient(135deg, #00224f 0%, #003C96 60%, #002a6b 100%)'
         }}
       >
         {/* losango sutil de fundo */}
@@ -103,11 +103,11 @@ const Login = () => {
 
         <div className='relative flex flex-col gap-4 max-is-[460px]'>
           <Typography variant='h3' className='text-white font-bold leading-tight'>
-            Antecipe seu crédito judicial com segurança.
+            Compra e venda de precatórios com segurança.
           </Typography>
           <Typography className='text-white/80'>
-            CRM do Grupo L4 — prospecção, negociação e acompanhamento processual de precatórios, RPV e ativos
-            tributários em um só lugar.
+            CRM do Grupo L4 — prospecção, compliance e acompanhamento processual de precatórios, RPV (L4 Ativos) e
+            recuperação tributária (L4 Taxx) em um só lugar. <strong className='text-white'>Segurança é a palavra-chave.</strong>
           </Typography>
 
           <div className='flex flex-col gap-3 mt-4'>
