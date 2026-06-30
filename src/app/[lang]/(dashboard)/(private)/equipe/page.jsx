@@ -88,8 +88,8 @@ export default async function EquipePage(props) {
                   <TableCell>Membro</TableCell>
                   <TableCell>E-mail</TableCell>
                   <TableCell>Função</TableCell>
-                  <TableCell align='right'>Leads atribuídos</TableCell>
-                  <TableCell>Status</TableCell>
+                  <TableCell align='right'>Leads na carteira</TableCell>
+                  <TableCell>Conta</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
