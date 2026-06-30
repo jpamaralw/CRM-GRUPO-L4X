@@ -9,10 +9,10 @@ export const SETTINGS_SCHEMA = {
     default: ''
   },
   consulta_daily_limit: {
-    label: 'Limite de processos por consulta',
-    help: 'Quantos processos são consultados no DataJud a cada execução (automática ou manual).',
+    label: 'Máximo de processos por execução',
+    help: 'Teto de processos consultados no DataJud por execução. A consulta roda em paralelo e cobre toda a base ativa dentro do tempo disponível; o que não couber entra primeiro na próxima execução.',
     type: 'number',
-    default: '150'
+    default: '1200'
   },
   email_signature: {
     label: 'Assinatura do e-mail',

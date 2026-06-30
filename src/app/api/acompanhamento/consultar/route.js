@@ -11,15 +11,21 @@ import { getSetting } from '@/libs/settings'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300
 
-const DEFAULT_LIMIT = 150
+const DEFAULT_LIMIT = 1200 // cobre toda a base ativa (~1106) com folga
+const MAX_LIMIT = 5000
 
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+// Quantos processos consultar em paralelo (educado com a API do DataJud, sem sleep cego).
+const CONCURRENCY = 8
+
+// Orçamento de tempo: paramos de iniciar novos antes do teto de 300s e deixamos o resto
+// (ordenado por mais antigo) para a próxima execução.
+const TIME_BUDGET_MS = 270000
 
 // Limite configurável nas Configurações; usado quando a chamada não envia limit explícito.
 async function settingLimit() {
   const raw = Number(await getSetting('consulta_daily_limit'))
 
-  return Number.isFinite(raw) && raw > 0 ? Math.min(raw, 200) : DEFAULT_LIMIT
+  return Number.isFinite(raw) && raw > 0 ? Math.min(raw, MAX_LIMIT) : DEFAULT_LIMIT
 }
 
 // Autoriza por (a) header de cron com API_SECRET_KEY ou (b) usuário logado com permissão.
@@ -44,7 +50,7 @@ export async function GET(request) {
 
   const { searchParams } = new URL(request.url)
   const explicit = Number(searchParams.get('limit'))
-  const limit = explicit ? Math.min(Math.max(explicit, 1), 200) : await settingLimit()
+  const limit = explicit ? Math.min(Math.max(explicit, 1), MAX_LIMIT) : await settingLimit()
 
   // Envia o relatório por e-mail aos Drs quando rodando via cron ou com ?digest=1
   const sendDigest = auth.via === 'cron' || searchParams.get('digest') === '1'
@@ -63,7 +69,7 @@ export async function POST(request) {
   try {
     const body = await request.json().catch(() => ({}))
 
-    if (body?.limit) limit = Math.min(Math.max(Number(body.limit) || limit, 1), 200)
+    if (body?.limit) limit = Math.min(Math.max(Number(body.limit) || limit, 1), MAX_LIMIT)
     if (body?.digest) sendDigest = true
   } catch {
     /* sem body */
@@ -83,98 +89,133 @@ async function runConsulta(limit, { sendDigest = false } = {}) {
     data: { status: 'RUNNING', totalProcessos: processos.length }
   })
 
+  const startedAt = Date.now()
+
   let consultados = 0
   let novasMovimentacoes = 0
   let erros = 0
+  let processados = 0
+  let interrompido = false
   const detalhes = []
   const novidades = []
 
-  for (const processo of processos) {
-    const resultado = await consultarProcesso({
-      numeroProcesso: processo.numeroProcesso,
-      tribunal: processo.tribunal
-    })
+  // Processa um único processo (consulta DataJud + dedupe por hash + atualização).
+  const processarUm = async processo => {
+    try {
+      const resultado = await consultarProcesso({
+        numeroProcesso: processo.numeroProcesso,
+        tribunal: processo.tribunal
+      })
 
-    if (!resultado.ok) {
-      erros++
-      detalhes.push(`${processo.numeroProcesso}: ${resultado.error}`)
+      if (!resultado.ok) {
+        erros++
+        detalhes.push(`${processo.numeroProcesso}: ${resultado.error}`)
+        await prisma.processoMonitorado.update({
+          where: { id: processo.id },
+          data: { statusConsulta: 'ERRO_CONSULTA', ultimaConsultaAt: new Date() }
+        })
+
+        return
+      }
+
+      consultados++
+
+      // Movimentações já registradas (por hash)
+      const existentes = await prisma.movimentacaoMonitorada.findMany({
+        where: { processoMonitoradoId: processo.id },
+        select: { hash: true }
+      })
+
+      const hashesExistentes = new Set(existentes.map(m => m.hash))
+
+      const novas = resultado.movimentos.filter(m => !hashesExistentes.has(m.hash))
+
+      if (novas.length) {
+        await prisma.movimentacaoMonitorada.createMany({
+          data: novas.map(m => ({
+            processoMonitoradoId: processo.id,
+            dataMovimento: m.dataHora ? new Date(m.dataHora) : null,
+            descricao: m.nome || 'Movimentação',
+            hash: m.hash,
+            fonte: 'DATAJUD',
+            nova: true,
+            visualizada: false
+          })),
+          skipDuplicates: true
+        })
+        novasMovimentacoes += novas.length
+      }
+
+      const ultima = resultado.movimentos[resultado.movimentos.length - 1]
+
+      // Se nunca tinha sido consultado, a primeira carga não conta como "novidade"
+      const jaConsultado = !!processo.ultimaConsultaAt
+      const temNovidadeReal = jaConsultado && novas.length > 0
+
+      // Coleta novidades reais para o relatório por e-mail
+      if (temNovidadeReal) {
+        novas.forEach(m =>
+          novidades.push({
+            numeroProcesso: processo.numeroProcesso,
+            cliente: processo.cliente,
+            tribunal: processo.tribunal,
+            descricao: m.nome || 'Movimentação',
+            dataMovimento: m.dataHora || null
+          })
+        )
+      }
+
       await prisma.processoMonitorado.update({
         where: { id: processo.id },
-        data: { statusConsulta: 'ERRO_CONSULTA', ultimaConsultaAt: new Date() }
+        data: {
+          statusConsulta: temNovidadeReal ? 'NOVA_MOVIMENTACAO' : 'SEM_NOVIDADE',
+          ultimaConsultaAt: new Date(),
+          ultimaMovimentacaoAt: ultima?.dataHora ? new Date(ultima.dataHora) : processo.ultimaMovimentacaoAt,
+          ultimaMovimentacaoTexto: ultima?.nome || processo.ultimaMovimentacaoTexto
+        }
       })
-      await sleep(1200)
-      continue
+    } catch (err) {
+      erros++
+      detalhes.push(`${processo.numeroProcesso}: ${err.message}`)
     }
-
-    consultados++
-
-    // Movimentações já registradas (por hash)
-    const existentes = await prisma.movimentacaoMonitorada.findMany({
-      where: { processoMonitoradoId: processo.id },
-      select: { hash: true }
-    })
-
-    const hashesExistentes = new Set(existentes.map(m => m.hash))
-
-    const novas = resultado.movimentos.filter(m => !hashesExistentes.has(m.hash))
-
-    if (novas.length) {
-      await prisma.movimentacaoMonitorada.createMany({
-        data: novas.map(m => ({
-          processoMonitoradoId: processo.id,
-          dataMovimento: m.dataHora ? new Date(m.dataHora) : null,
-          descricao: m.nome || 'Movimentação',
-          hash: m.hash,
-          fonte: 'DATAJUD',
-          nova: true,
-          visualizada: false
-        })),
-        skipDuplicates: true
-      })
-      novasMovimentacoes += novas.length
-    }
-
-    const ultima = resultado.movimentos[resultado.movimentos.length - 1]
-
-    // Se nunca tinha sido consultado, a primeira carga não conta como "novidade"
-    const jaConsultado = !!processo.ultimaConsultaAt
-    const temNovidadeReal = jaConsultado && novas.length > 0
-
-    // Coleta novidades reais para o relatório por e-mail
-    if (temNovidadeReal) {
-      novas.forEach(m =>
-        novidades.push({
-          numeroProcesso: processo.numeroProcesso,
-          cliente: processo.cliente,
-          tribunal: processo.tribunal,
-          descricao: m.nome || 'Movimentação',
-          dataMovimento: m.dataHora || null
-        })
-      )
-    }
-
-    await prisma.processoMonitorado.update({
-      where: { id: processo.id },
-      data: {
-        statusConsulta: temNovidadeReal ? 'NOVA_MOVIMENTACAO' : 'SEM_NOVIDADE',
-        ultimaConsultaAt: new Date(),
-        ultimaMovimentacaoAt: ultima?.dataHora ? new Date(ultima.dataHora) : processo.ultimaMovimentacaoAt,
-        ultimaMovimentacaoTexto: ultima?.nome || processo.ultimaMovimentacaoTexto
-      }
-    })
-
-    await sleep(1200)
   }
+
+  // Pool de workers com concorrência limitada e guarda de tempo.
+  // Cada worker puxa o próximo índice até esgotar a fila ou estourar o orçamento.
+  let cursor = 0
+
+  const worker = async () => {
+    while (true) {
+      if (Date.now() - startedAt > TIME_BUDGET_MS) {
+        interrompido = true
+
+        return
+      }
+
+      const i = cursor++
+
+      if (i >= processos.length) return
+
+      await processarUm(processos[i])
+      processados++
+    }
+  }
+
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, processos.length) }, () => worker()))
 
   const finalizado = await prisma.consultaProcessualRun.update({
     where: { id: run.id },
     data: {
-      status: 'CONCLUIDO',
+      status: interrompido ? 'PARCIAL' : 'CONCLUIDO',
       finishedAt: new Date(),
       consultados,
       novasMovimentacoes,
       erros,
-      detalhes: detalhes.slice(0, 50).join('\n') || null
+      detalhes:
+        [interrompido ? `Execução parcial: ${processados}/${processos.length} processados (orçamento de tempo).` : null, ...detalhes]
+          .filter(Boolean)
+          .slice(0, 50)
+          .join('\n') || null
     }
   })
 
@@ -211,6 +252,8 @@ async function runConsulta(limit, { sendDigest = false } = {}) {
     ok: true,
     runId: finalizado.id,
     totalProcessos: processos.length,
+    processados,
+    parcial: interrompido,
     consultados,
     novasMovimentacoes,
     erros,

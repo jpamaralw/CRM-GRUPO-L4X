@@ -27,11 +27,16 @@ const ConsultarButton = () => {
 
       if (!res.ok) throw new Error(data.error || 'Falha na consulta')
 
-      toast.success(
-        `Consulta concluída: ${data.consultados} processos, ${data.novasMovimentacoes} novas movimentações${
-          data.erros ? `, ${data.erros} erros` : ''
-        }`
-      )
+      const resumo = `${data.consultados} processos, ${data.novasMovimentacoes} novas movimentações${
+        data.erros ? `, ${data.erros} erros` : ''
+      }`
+
+      if (data.parcial) {
+        toast.info(`Execução parcial (limite de tempo): ${resumo}. O restante entra na próxima execução.`)
+      } else {
+        toast.success(`Consulta concluída: ${resumo}`)
+      }
+
       router.refresh()
     } catch (err) {
       toast.error(err.message)
