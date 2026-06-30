@@ -96,17 +96,17 @@ const CommandFooter = () => {
         <kbd>
           <i className='ri-arrow-down-line text-base' />
         </kbd>
-        <span>to navigate</span>
+        <span>navegar</span>
       </div>
       <div className='flex items-center gap-1'>
         <kbd>
           <i className='ri-corner-down-left-line text-base' />
         </kbd>
-        <span>to open</span>
+        <span>abrir</span>
       </div>
       <div className='flex items-center gap-1'>
         <kbd>esc</kbd>
-        <span>to close</span>
+        <span>fechar</span>
       </div>
     </div>
   )
@@ -194,7 +194,7 @@ const NavSearch = () => {
           <IconButton className='text-textPrimary' onClick={() => setOpen(true)}>
             <i className='ri-search-line' />
           </IconButton>
-          <div className='whitespace-nowrap select-none text-textDisabled'>Search ⌘K</div>
+          <div className='whitespace-nowrap select-none text-textDisabled'>Buscar</div>
         </div>
       )}
       <CommandDialog open={open} onOpenChange={setOpen}>

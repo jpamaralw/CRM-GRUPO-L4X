@@ -10,102 +10,77 @@ import { getLocalizedUrl } from '@/utils/i18n'
 
 const defaultSuggestions = [
   {
-    sectionLabel: 'Popular Searches',
+    sectionLabel: 'Atalhos',
     items: [
       {
-        label: 'Analytics',
-        href: '/dashboards/analytics',
-        icon: 'ri-bar-chart-line'
-      },
-      {
-        label: 'CRM',
+        label: 'Dashboard',
         href: '/dashboards/crm',
-        icon: 'ri-pie-chart-2-line'
+        icon: 'ri-dashboard-line'
       },
       {
-        label: 'eCommerce',
-        href: '/dashboards/ecommerce',
-        icon: 'ri-shopping-bag-3-line'
+        label: 'Pipeline',
+        href: '/pipeline',
+        icon: 'ri-git-branch-line'
       },
       {
-        label: 'User List',
-        href: '/apps/user/list',
+        label: 'Resultados',
+        href: '/resultados',
+        icon: 'ri-bar-chart-grouped-line'
+      },
+      {
+        label: 'Notificações',
+        href: '/notificacoes',
+        icon: 'ri-notification-2-line'
+      }
+    ]
+  },
+  {
+    sectionLabel: 'Jurídico',
+    items: [
+      {
+        label: 'Acompanhamento Processual',
+        href: '/acompanhamento-processual',
+        icon: 'ri-scales-3-line'
+      },
+      {
+        label: 'Leads',
+        href: '/leads',
         icon: 'ri-file-user-line'
+      },
+      {
+        label: 'Importar',
+        href: '/importar',
+        icon: 'ri-upload-2-line'
+      },
+      {
+        label: 'Compliance',
+        href: '/compliance',
+        icon: 'ri-shield-check-line'
       }
     ]
   },
   {
-    sectionLabel: 'Apps',
+    sectionLabel: 'Gestão',
     items: [
       {
-        label: 'Calendar',
-        href: '/apps/calendar',
-        icon: 'ri-calendar-line'
+        label: 'Equipe',
+        href: '/equipe',
+        icon: 'ri-team-line'
       },
       {
-        label: 'Invoice List',
-        href: '/apps/invoice/list',
-        icon: 'ri-file-list-3-line'
+        label: 'Automações',
+        href: '/automacoes',
+        icon: 'ri-robot-line'
       },
       {
-        label: 'User List',
-        href: '/apps/user/list',
-        icon: 'ri-file-user-line'
+        label: 'Configurações',
+        href: '/configuracoes',
+        icon: 'ri-settings-3-line'
       },
       {
-        label: 'Roles & Permissions',
-        href: '/apps/roles',
-        icon: 'ri-lock-unlock-line'
-      }
-    ]
-  },
-  {
-    sectionLabel: 'Pages',
-    items: [
-      {
-        label: 'User Profile',
-        href: '/pages/user-profile',
-        icon: 'ri-user-3-line'
-      },
-      {
-        label: 'Account Settings',
-        href: '/pages/account-settings',
-        icon: 'ri-settings-4-line'
-      },
-      {
-        label: 'Pricing',
-        href: '/pages/pricing',
-        icon: 'ri-money-dollar-circle-line'
-      },
-      {
-        label: 'FAQ',
-        href: '/pages/faq',
-        icon: 'ri-question-line'
-      }
-    ]
-  },
-  {
-    sectionLabel: 'Forms & Charts',
-    items: [
-      {
-        label: 'Form Layouts',
-        href: '/forms/form-layouts',
-        icon: 'ri-file-text-line'
-      },
-      {
-        label: 'Form Validation',
-        href: '/forms/form-validation',
-        icon: 'ri-checkbox-multiple-line'
-      },
-      {
-        label: 'Form Wizard',
-        href: '/forms/form-wizard',
-        icon: 'ri-equalizer-line'
-      },
-      {
-        label: 'Apex Charts',
-        href: '/charts/apex-charts',
-        icon: 'ri-line-chart-line'
+        label: 'Relatórios',
+        href: '/relatorios',
+        icon: 'ri-file-chart-line'
       }
     ]
   }

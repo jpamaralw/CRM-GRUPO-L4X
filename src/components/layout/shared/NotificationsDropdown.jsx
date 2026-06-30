@@ -3,6 +3,10 @@
 // React Imports
 import { useRef, useState, useEffect } from 'react'
 
+// Next Imports
+import Link from 'next/link'
+import { useParams } from 'next/navigation'
+
 // MUI Imports
 import IconButton from '@mui/material/IconButton'
 import Badge from '@mui/material/Badge'
@@ -83,6 +87,7 @@ const NotificationDropdown = ({ notifications }) => {
   const hidden = useMediaQuery(theme => theme.breakpoints.down('lg'))
   const isSmallScreen = useMediaQuery(theme => theme.breakpoints.down('sm'))
   const { settings } = useSettings()
+  const { lang: locale } = useParams()
 
   const handleClose = () => {
     setOpen(false)
@@ -175,13 +180,13 @@ const NotificationDropdown = ({ notifications }) => {
                 <div className='bs-full flex flex-col'>
                   <div className='flex items-center justify-between plb-3 pli-4 is-full gap-2'>
                     <Typography variant='h6' className='flex-auto'>
-                      Notifications
+                      Notificações
                     </Typography>
                     {notificationCount > 0 && (
-                      <Chip variant='tonal' size='small' color='primary' label={`${notificationCount} New`} />
+                      <Chip variant='tonal' size='small' color='primary' label={`${notificationCount} ${notificationCount === 1 ? 'nova' : 'novas'}`} />
                     )}
                     <Tooltip
-                      title={readAll ? 'Mark all as unread' : 'Mark all as read'}
+                      title={readAll ? 'Marcar todas como não lidas' : 'Marcar todas como lidas'}
                       placement={placement === 'bottom-end' ? 'left' : 'right'}
                       slotProps={{
                         popper: {
@@ -258,8 +263,15 @@ const NotificationDropdown = ({ notifications }) => {
                   </ScrollWrapper>
                   <Divider />
                   <div className='p-4'>
-                    <Button fullWidth variant='contained' size='small'>
-                      View All Notifications
+                    <Button
+                      fullWidth
+                      variant='contained'
+                      size='small'
+                      component={Link}
+                      href={`/${locale}/notificacoes`}
+                      onClick={handleClose}
+                    >
+                      Ver todas as notificações
                     </Button>
                   </div>
                 </div>
