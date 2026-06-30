@@ -20,7 +20,7 @@ const ConsultarButton = () => {
       const res = await fetch('/api/acompanhamento/consultar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ limit: 50 })
+        body: JSON.stringify({})
       })
 
       const data = await res.json()

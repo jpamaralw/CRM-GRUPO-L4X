@@ -1,4 +1,5 @@
 import prisma from '@/libs/prisma'
+import { getSetting } from '@/libs/settings'
 
 const fmtData = v => {
   if (!v) return '—'
@@ -20,7 +21,11 @@ export async function resolveDigestRecipients() {
   // Fallback por env caso ainda não haja advogados cadastrados
   const envTo = (process.env.EMAIL_ACOMPANHAMENTO || '').split(',').map(s => s.trim()).filter(Boolean)
 
-  return { to: to.length ? to : envTo, cc }
+  // Destinatários extras configurados nas Configurações (entram em cópia)
+  const extra = (await getSetting('digest_extra_recipients')) || ''
+  const extraEmails = extra.split(',').map(s => s.trim()).filter(Boolean)
+
+  return { to: to.length ? to : envTo, cc: [...new Set([...cc, ...extraEmails])] }
 }
 
 /**

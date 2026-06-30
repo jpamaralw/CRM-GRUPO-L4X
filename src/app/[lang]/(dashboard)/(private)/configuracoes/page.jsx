@@ -11,6 +11,8 @@ import Chip from '@mui/material/Chip'
 import prisma from '@/libs/prisma'
 import { requireCurrentUser } from '@/libs/serverAuth'
 import { canAccessSettings } from '@/utils/permissions'
+import { getSettings, SETTINGS_SCHEMA } from '@/libs/settings'
+import ConfiguracoesForm from '@/views/configuracoes/ConfiguracoesForm'
 
 export const dynamic = 'force-dynamic'
 
@@ -31,10 +33,11 @@ export default async function ConfiguracoesPage(props) {
 
   if (!user || !canAccessSettings(user.role)) redirect(`/${params.lang}/dashboards/crm`)
 
-  const [totalLeads, totalProcessos, totalUsuarios] = await Promise.all([
+  const [totalLeads, totalProcessos, totalUsuarios, settings] = await Promise.all([
     prisma.lead.count(),
     prisma.processoMonitorado.count(),
-    prisma.user.count()
+    prisma.user.count(),
+    getSettings()
   ])
 
   return (
@@ -77,6 +80,8 @@ export default async function ConfiguracoesPage(props) {
           </Card>
         </Grid>
       </Grid>
+
+      <ConfiguracoesForm schema={SETTINGS_SCHEMA} initialSettings={settings} />
     </div>
   )
 }

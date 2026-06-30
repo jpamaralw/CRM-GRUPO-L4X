@@ -6,11 +6,21 @@ import { getCurrentUser } from '@/libs/serverAuth'
 import { canViewAcompanhamento } from '@/utils/permissions'
 import { sendEmail } from '@/libs/email'
 import { buildDigestHtml, resolveDigestRecipients } from '@/libs/acompanhamentoDigest'
+import { getSetting } from '@/libs/settings'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300
 
+const DEFAULT_LIMIT = 150
+
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+// Limite configurável nas Configurações; usado quando a chamada não envia limit explícito.
+async function settingLimit() {
+  const raw = Number(await getSetting('consulta_daily_limit'))
+
+  return Number.isFinite(raw) && raw > 0 ? Math.min(raw, 200) : DEFAULT_LIMIT
+}
 
 // Autoriza por (a) header de cron com API_SECRET_KEY ou (b) usuário logado com permissão.
 async function authorize(request) {
@@ -33,7 +43,8 @@ export async function GET(request) {
   if (!auth.ok) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { searchParams } = new URL(request.url)
-  const limit = Math.min(Math.max(Number(searchParams.get('limit')) || 50, 1), 200)
+  const explicit = Number(searchParams.get('limit'))
+  const limit = explicit ? Math.min(Math.max(explicit, 1), 200) : await settingLimit()
 
   // Envia o relatório por e-mail aos Drs quando rodando via cron ou com ?digest=1
   const sendDigest = auth.via === 'cron' || searchParams.get('digest') === '1'
@@ -46,13 +57,13 @@ export async function POST(request) {
 
   if (!auth.ok) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  let limit = 50
+  let limit = await settingLimit()
   let sendDigest = auth.via === 'cron'
 
   try {
     const body = await request.json().catch(() => ({}))
 
-    if (body?.limit) limit = Math.min(Math.max(Number(body.limit) || 50, 1), 200)
+    if (body?.limit) limit = Math.min(Math.max(Number(body.limit) || limit, 1), 200)
     if (body?.digest) sendDigest = true
   } catch {
     /* sem body */

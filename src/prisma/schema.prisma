@@ -247,3 +247,10 @@ model ScrapingBatch {
   @@index([tribunal])
   @@index([operation])
 }
+
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+}
