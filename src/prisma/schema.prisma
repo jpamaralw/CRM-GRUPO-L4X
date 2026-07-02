@@ -101,6 +101,10 @@ model Lead {
   reuniaoComprovante String?
   reuniaoTipo      String?
   metadata         Json?
+  // Meta Lead Ads attribution
+  metaLeadId       String?  @unique
+  metaCampaignName String?
+  metaFormName     String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   movimentacoes    Movimentacao[]
@@ -116,7 +120,25 @@ model Lead {
   @@index([cnpj])
   @@index([cpf])
   @@index([origem])
+  @@index([metaLeadId])
   @@map("LeadJudicial")
+}
+
+model MetaWebhookEvent {
+  id          String   @id @default(cuid())
+  leadgenId   String   @unique
+  pageId      String?
+  formId      String?
+  adId        String?
+  campaignId  String?
+  rawPayload  Json
+  processed   Boolean  @default(false)
+  error       String?
+  leadId      String?
+  createdAt   DateTime @default(now())
+
+  @@index([processed])
+  @@index([createdAt])
 }
 
 model Movimentacao {

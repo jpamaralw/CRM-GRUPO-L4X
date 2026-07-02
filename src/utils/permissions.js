@@ -155,6 +155,10 @@ export function canAccessSettings(role) {
   return [ROLES.TI, ROLES.SOCIO].includes(role)
 }
 
+export function canManageMetaLeads(role) {
+  return [ROLES.GESTOR, ROLES.SOCIO, ROLES.TI].includes(role)
+}
+
 // Compliance: os Drs (ADVOGADO) aprovam/reprovam a compra do ativo; gestores/TI também podem.
 export function canDoCompliance(role) {
   return [ROLES.ADVOGADO, ROLES.GESTOR, ROLES.SOCIO, ROLES.TI].includes(role)

@@ -18,7 +18,8 @@ import {
   canViewAcompanhamento,
   canManageTeam,
   canManageAutomations,
-  canAccessSettings
+  canAccessSettings,
+  canManageMetaLeads
 } from '@/utils/permissions'
 
 const RenderExpandIcon = ({ open, transitionDuration }) => (
@@ -46,6 +47,7 @@ const VerticalMenu = ({ scrollMenu }) => {
   const showAutomacoes = canManageAutomations(role)
   const showConfig = canAccessSettings(role)
   const showGestao = showEquipe || showAutomacoes || showConfig
+  const showMeta = canManageMetaLeads(role)
 
   return (
     <ScrollWrapper
@@ -80,6 +82,11 @@ const VerticalMenu = ({ scrollMenu }) => {
             <MenuItem href={`/${locale}/resultados`} icon={<i className='ri-bar-chart-grouped-line' />}>
               Resultados
             </MenuItem>
+            {showMeta && (
+              <MenuItem href={`/${locale}/meta-leads`} icon={<i className='ri-meta-line' />}>
+                Meta Ads
+              </MenuItem>
+            )}
           </MenuSection>
         )}
 
